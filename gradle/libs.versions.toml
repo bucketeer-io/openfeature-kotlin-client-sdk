@@ -1,5 +1,7 @@
 [versions]
 agp = "8.8.0"
+bucketeerAndroidClientSdk = "2.2.1"
+openfeatureAndroidSdk = "0.3.3"
 kotlin = "1.9.24"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -11,6 +13,8 @@ activity = "1.10.0"
 constraintlayout = "2.2.0"
 
 [libraries]
+bucketeer-android-sdk = { module = "io.bucketeer:android-client-sdk", version.ref = "bucketeerAndroidClientSdk" }
+openfeature-android-sdk = { module = "dev.openfeature:android-sdk", version.ref = "openfeatureAndroidSdk" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

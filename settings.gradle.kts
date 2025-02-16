@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "sample"
+rootProject.name = "bucketeeropenfeature"
 include(":app")
 include(":openfeatureprovider")
