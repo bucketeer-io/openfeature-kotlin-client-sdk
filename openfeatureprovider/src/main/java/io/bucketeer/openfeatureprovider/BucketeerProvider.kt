@@ -6,14 +6,21 @@ import dev.openfeature.sdk.Hook
 import dev.openfeature.sdk.ProviderEvaluation
 import dev.openfeature.sdk.ProviderMetadata
 import dev.openfeature.sdk.Value
+import dev.openfeature.sdk.events.EventHandler
 import dev.openfeature.sdk.events.OpenFeatureEvents
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 
 class BucketeerProvider : FeatureProvider {
+    private val eventHandler = EventHandler(Dispatchers.IO)
+
     override val hooks: List<Hook<*>>
-        get() = TODO("Not yet implemented")
+        = emptyList()
     override val metadata: ProviderMetadata
-        get() = TODO("Not yet implemented")
+        = object : ProviderMetadata {
+            override val name: String
+                = "BucketeerProvider"
+        }
 
     override fun getBooleanEvaluation(
         key: String,
@@ -47,9 +54,6 @@ class BucketeerProvider : FeatureProvider {
         TODO("Not yet implemented")
     }
 
-    override fun getProviderStatus(): OpenFeatureEvents {
-        TODO("Not yet implemented")
-    }
 
     override fun getStringEvaluation(
         key: String,
@@ -60,21 +64,21 @@ class BucketeerProvider : FeatureProvider {
     }
 
     override fun initialize(initialContext: EvaluationContext?) {
-        TODO("Not yet implemented")
+
     }
 
-    override fun observe(): Flow<OpenFeatureEvents> {
-        TODO("Not yet implemented")
-    }
+    override fun getProviderStatus(): OpenFeatureEvents = eventHandler.getProviderStatus()
+
+    override fun observe(): Flow<OpenFeatureEvents> = eventHandler.observe()
 
     override fun onContextSet(
         oldContext: EvaluationContext?,
         newContext: EvaluationContext,
     ) {
-        TODO("Not yet implemented")
+
     }
 
     override fun shutdown() {
-        TODO("Not yet implemented")
+
     }
 }

@@ -3,7 +3,7 @@ package io.bucketeer.openfeatureprovider
 import dev.openfeature.sdk.Value
 import io.bucketeer.sdk.android.BKTValue
 
-fun Value.toBKTValue(): BKTValue =
+internal fun Value.toBKTValue(): BKTValue =
     when (this) {
         is Value.Boolean -> BKTValue.Boolean(this.boolean)
         is Value.List -> BKTValue.List(this.list.map { it.toBKTValue() })
