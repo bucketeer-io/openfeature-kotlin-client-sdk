@@ -1,6 +1,7 @@
 package io.bucketeer.openfeatureprovider
 
 import android.content.Context
+import dev.openfeature.sdk.exceptions.OpenFeatureError
 import io.bucketeer.sdk.android.BKTClient
 import io.bucketeer.sdk.android.BKTConfig
 import io.bucketeer.sdk.android.BKTEvaluationDetails
@@ -13,51 +14,65 @@ import java.util.concurrent.Future
 internal interface BKTClientResolver {
     fun boolVariationDetails(
         featureId: String,
-        defaultValue: Boolean
+        defaultValue: Boolean,
     ): BKTEvaluationDetails<Boolean>
 
-    fun intVariationDetails(featureId: String, defaultValue: Int): BKTEvaluationDetails<Int>
+    fun intVariationDetails(
+        featureId: String,
+        defaultValue: Int,
+    ): BKTEvaluationDetails<Int>
+
     fun doubleVariationDetails(
         featureId: String,
-        defaultValue: Double
+        defaultValue: Double,
     ): BKTEvaluationDetails<Double>
 
     fun stringVariationDetails(
         featureId: String,
-        defaultValue: String
+        defaultValue: String,
     ): BKTEvaluationDetails<String>
 
     fun objectVariationDetails(
         featureId: String,
-        defaultValue: BKTValue
+        defaultValue: BKTValue,
     ): BKTEvaluationDetails<BKTValue>
 }
 
 internal interface BKTClientResolverFactory {
-    val clientResolver: BKTClientResolver?
+    fun getClientResolver(): BKTClientResolver
+
     fun initialize(
         context: Context,
         config: BKTConfig,
         user: BKTUser,
         timeoutMillis: Long = 5000,
     ): Future<BKTException?>
-    fun destroy();
+
+    fun destroy()
 }
 
 internal class DefaultBKTClientResolverFactory : BKTClientResolverFactory {
     private var client: BKTClient? = null
 
-    override var clientResolver: BKTClientResolver? = null
+    private var clientResolver: BKTClientResolver? = null
+
+    override fun getClientResolver(): BKTClientResolver {
+        if (clientResolver == null) {
+            throw OpenFeatureError.ProviderNotReadyError("BKTClientResolver is not initialized")
+        }
+        return clientResolver!!
+    }
 
     override fun initialize(
         context: Context,
         config: BKTConfig,
         user: BKTUser,
-        timeoutMillis: Long
+        timeoutMillis: Long,
     ): Future<BKTException?> {
-
         val future = BKTClient.initialize(context, config, user)
-        client = BKTClient.getInstance()
+        val bktClient = BKTClient.getInstance()
+        client = bktClient
+        clientResolver = DefaultBKTClientResolver(bktClient)
         return future
     }
 
@@ -69,34 +84,31 @@ internal class DefaultBKTClientResolverFactory : BKTClientResolverFactory {
 }
 
 @JvmInline
-internal value class DefaultBKTClientResolver(private val client: BKTClient) : BKTClientResolver {
+internal value class DefaultBKTClientResolver(
+    private val client: BKTClient,
+) : BKTClientResolver {
     override fun boolVariationDetails(
         featureId: String,
-        defaultValue: Boolean
-    ): BKTEvaluationDetails<Boolean> =
-        client.boolVariationDetails(featureId, defaultValue)
+        defaultValue: Boolean,
+    ): BKTEvaluationDetails<Boolean> = client.boolVariationDetails(featureId, defaultValue)
 
     override fun intVariationDetails(
         featureId: String,
-        defaultValue: Int
-    ): BKTEvaluationDetails<Int> =
-        client.intVariationDetails(featureId, defaultValue)
+        defaultValue: Int,
+    ): BKTEvaluationDetails<Int> = client.intVariationDetails(featureId, defaultValue)
 
     override fun doubleVariationDetails(
         featureId: String,
-        defaultValue: Double
-    ): BKTEvaluationDetails<Double> =
-        client.doubleVariationDetails(featureId, defaultValue)
+        defaultValue: Double,
+    ): BKTEvaluationDetails<Double> = client.doubleVariationDetails(featureId, defaultValue)
 
     override fun stringVariationDetails(
         featureId: String,
-        defaultValue: String
-    ): BKTEvaluationDetails<String> =
-        client.stringVariationDetails(featureId, defaultValue)
+        defaultValue: String,
+    ): BKTEvaluationDetails<String> = client.stringVariationDetails(featureId, defaultValue)
 
     override fun objectVariationDetails(
         featureId: String,
-        defaultValue: BKTValue
-    ): BKTEvaluationDetails<BKTValue> =
-        client.objectVariationDetails(featureId, defaultValue)
+        defaultValue: BKTValue,
+    ): BKTEvaluationDetails<BKTValue> = client.objectVariationDetails(featureId, defaultValue)
 }

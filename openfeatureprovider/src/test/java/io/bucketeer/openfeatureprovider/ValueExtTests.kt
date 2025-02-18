@@ -46,9 +46,9 @@ class ValueExtTests {
 
     @Test
     fun test_ValueNumber_Double_toBKTValue() {
-        val value = Value.Double(42.0)
+        val value = Value.Double(42.1)
         val bktValue = value.toBKTValue()
-        assertEquals(BKTValue.Number(42.0), bktValue)
+        assertEquals(BKTValue.Number(42.1), bktValue)
     }
 
     @Test

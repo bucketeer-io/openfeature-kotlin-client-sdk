@@ -8,18 +8,30 @@ import dev.openfeature.sdk.ProviderMetadata
 import dev.openfeature.sdk.Value
 import dev.openfeature.sdk.events.EventHandler
 import dev.openfeature.sdk.events.OpenFeatureEvents
+import dev.openfeature.sdk.exceptions.OpenFeatureError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 
-class BucketeerProvider : FeatureProvider {
+class BucketeerProvider() : FeatureProvider {
     private val eventHandler = EventHandler(Dispatchers.IO)
+    private var clientResolver: BKTClientResolver? = null
+    private lateinit var clientResolverFactory: BKTClientResolverFactory
 
-    override val hooks: List<Hook<*>>
-        = emptyList()
-    override val metadata: ProviderMetadata
-        = object : ProviderMetadata {
-            override val name: String
-                = "BucketeerProvider"
+    // For testing purposes
+    internal constructor(clientResolverFactory: BKTClientResolverFactory) : this() {
+        this.clientResolverFactory = clientResolverFactory
+    }
+
+    init {
+        if (::clientResolverFactory.isInitialized.not()) {
+            clientResolverFactory = DefaultBKTClientResolverFactory()
+        }
+    }
+
+    override val hooks: List<Hook<*>> = emptyList()
+    override val metadata: ProviderMetadata =
+        object : ProviderMetadata {
+            override val name: String = "BucketeerProvider"
         }
 
     override fun getBooleanEvaluation(
@@ -54,17 +66,17 @@ class BucketeerProvider : FeatureProvider {
         TODO("Not yet implemented")
     }
 
-
     override fun getStringEvaluation(
         key: String,
         defaultValue: String,
         context: EvaluationContext?,
     ): ProviderEvaluation<String> {
+        val client = requiredClientResolver()
+        val evaluation = client.stringVariationDetails(key, defaultValue)
         TODO("Not yet implemented")
     }
 
     override fun initialize(initialContext: EvaluationContext?) {
-
     }
 
     override fun getProviderStatus(): OpenFeatureEvents = eventHandler.getProviderStatus()
@@ -75,10 +87,18 @@ class BucketeerProvider : FeatureProvider {
         oldContext: EvaluationContext?,
         newContext: EvaluationContext,
     ) {
-
     }
 
     override fun shutdown() {
+        if (::clientResolverFactory.isInitialized) {
+            clientResolverFactory.destroy()
+        }
+    }
 
+    internal fun requiredClientResolver(): BKTClientResolver {
+        if (clientResolver == null) {
+            throw OpenFeatureError.ProviderNotReadyError("BKTClientResolver is not initialized")
+        }
+        return clientResolver!!
     }
 }
