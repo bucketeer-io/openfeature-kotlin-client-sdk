@@ -103,7 +103,7 @@ class BucketeerProvider() : FeatureProvider {
         }
     }
 
-    internal fun requiredClientResolver(): BKTClientResolver {
+    private fun requiredClientResolver(): BKTClientResolver {
         if (clientResolver == null) {
             throw OpenFeatureError.ProviderNotReadyError("BKTClientResolver is not initialized")
         }
