@@ -39,7 +39,9 @@ class BucketeerProvider() : FeatureProvider {
         defaultValue: Boolean,
         context: EvaluationContext?,
     ): ProviderEvaluation<Boolean> {
-        TODO("Not yet implemented")
+        val client = requiredClientResolver()
+        val evaluation = client.boolVariationDetails(key, defaultValue).toProviderEvaluation()
+        return evaluation
     }
 
     override fun getDoubleEvaluation(
@@ -47,7 +49,9 @@ class BucketeerProvider() : FeatureProvider {
         defaultValue: Double,
         context: EvaluationContext?,
     ): ProviderEvaluation<Double> {
-        TODO("Not yet implemented")
+        val client = requiredClientResolver()
+        val evaluation = client.doubleVariationDetails(key, defaultValue).toProviderEvaluation()
+        return evaluation
     }
 
     override fun getIntegerEvaluation(
@@ -55,7 +59,9 @@ class BucketeerProvider() : FeatureProvider {
         defaultValue: Int,
         context: EvaluationContext?,
     ): ProviderEvaluation<Int> {
-        TODO("Not yet implemented")
+        val client = requiredClientResolver()
+        val evaluation = client.intVariationDetails(key, defaultValue).toProviderEvaluation()
+        return evaluation
     }
 
     override fun getObjectEvaluation(
@@ -63,7 +69,9 @@ class BucketeerProvider() : FeatureProvider {
         defaultValue: Value,
         context: EvaluationContext?,
     ): ProviderEvaluation<Value> {
-        TODO("Not yet implemented")
+        val client = requiredClientResolver()
+        val evaluation = client.objectVariationDetails(key, defaultValue.toBKTValue()).toProviderEvaluationValue()
+        return evaluation
     }
 
     override fun getStringEvaluation(
@@ -72,8 +80,8 @@ class BucketeerProvider() : FeatureProvider {
         context: EvaluationContext?,
     ): ProviderEvaluation<String> {
         val client = requiredClientResolver()
-        val evaluation = client.stringVariationDetails(key, defaultValue)
-        TODO("Not yet implemented")
+        val evaluation = client.stringVariationDetails(key, defaultValue).toProviderEvaluation()
+        return evaluation
     }
 
     override fun initialize(initialContext: EvaluationContext?) {
