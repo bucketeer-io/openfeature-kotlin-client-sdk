@@ -95,6 +95,8 @@ class BucketeerProvider() : FeatureProvider {
         oldContext: EvaluationContext?,
         newContext: EvaluationContext,
     ) {
+        // Not support changing the targeting_id after initialization
+        // Need to reinitialize the provider
     }
 
     override fun shutdown() {
