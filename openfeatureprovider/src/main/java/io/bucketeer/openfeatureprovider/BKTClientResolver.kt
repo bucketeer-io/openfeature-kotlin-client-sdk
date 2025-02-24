@@ -36,6 +36,10 @@ internal interface BKTClientResolver {
         featureId: String,
         defaultValue: BKTValue,
     ): BKTEvaluationDetails<BKTValue>
+
+    fun currentUser(): BKTUser
+
+    fun updateUserAttributes(attributes: Map<String, String>)
 }
 
 internal interface BKTClientResolverFactory {
@@ -111,4 +115,8 @@ internal value class DefaultBKTClientResolver(
         featureId: String,
         defaultValue: BKTValue,
     ): BKTEvaluationDetails<BKTValue> = client.objectVariationDetails(featureId, defaultValue)
+
+    override fun currentUser(): BKTUser = client.currentUser()
+
+    override fun updateUserAttributes(attributes: Map<String, String>) = client.updateUserAttributes(attributes)
 }

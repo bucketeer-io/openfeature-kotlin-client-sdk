@@ -109,6 +109,13 @@ class BucketeerProvider() : FeatureProvider {
     ) {
         // Not support changing the targeting_id after initialization
         // Need to reinitialize the provider
+        val requiredClientResolver = requiredClientResolver()
+        val bktUser = newContext.toBKTUser()
+        val currentUser = requiredClientResolver.currentUser()
+        if (bktUser.id != currentUser.id) {
+            throw OpenFeatureError.InvalidContextError("Changing the targeting_id after initialization is not supported")
+        }
+        requiredClientResolver.updateUserAttributes(bktUser.attributes)
     }
 
     override fun shutdown() {
@@ -117,8 +124,7 @@ class BucketeerProvider() : FeatureProvider {
         }
     }
 
-    private fun requiredClientResolver(): BKTClientResolver {
-        return clientResolver
+    private fun requiredClientResolver(): BKTClientResolver =
+        clientResolver
             ?: throw OpenFeatureError.ProviderNotReadyError("BKTClientResolver is not initialized")
-    }
 }
