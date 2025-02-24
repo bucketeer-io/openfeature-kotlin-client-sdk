@@ -191,6 +191,7 @@ class BucketeerProvider(
     override fun shutdown() {
         if (::clientResolverFactory.isInitialized) {
             try {
+                clientResolver = null
                 clientResolverFactory.destroy()
             } catch (e: Exception) {
                 val errorMessage = "shutdown failed with error $e"
