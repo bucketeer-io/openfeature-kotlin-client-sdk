@@ -1,24 +1,42 @@
 package io.bucketeer.openfeatureprovider
 
+import android.content.Context
+import android.util.Log
 import dev.openfeature.sdk.EvaluationContext
 import dev.openfeature.sdk.FeatureProvider
 import dev.openfeature.sdk.Hook
+import dev.openfeature.sdk.ImmutableContext
 import dev.openfeature.sdk.ProviderEvaluation
 import dev.openfeature.sdk.ProviderMetadata
 import dev.openfeature.sdk.Value
 import dev.openfeature.sdk.events.EventHandler
 import dev.openfeature.sdk.events.OpenFeatureEvents
 import dev.openfeature.sdk.exceptions.OpenFeatureError
+import io.bucketeer.sdk.android.BKTConfig
+import io.bucketeer.sdk.android.BKTException
+import io.bucketeer.sdk.android.BKTUser
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class BucketeerProvider() : FeatureProvider {
+class BucketeerProvider(
+    private val context: Context,
+    private val config: BKTConfig,
+    private val coroutineScope: CoroutineScope,
+) : FeatureProvider {
     private val eventHandler = EventHandler(Dispatchers.IO)
     private var clientResolver: BKTClientResolver? = null
     private lateinit var clientResolverFactory: BKTClientResolverFactory
 
     // For testing purposes
-    internal constructor(clientResolverFactory: BKTClientResolverFactory) : this() {
+    internal constructor(
+        clientResolverFactory: BKTClientResolverFactory,
+        context: Context,
+        config: BKTConfig,
+        coroutineScope: CoroutineScope,
+    ) : this(context, config, coroutineScope) {
         this.clientResolverFactory = clientResolverFactory
     }
 
@@ -97,6 +115,47 @@ class BucketeerProvider() : FeatureProvider {
     }
 
     override fun initialize(initialContext: EvaluationContext?) {
+        coroutineScope.launch {
+            try {
+                val bktUser = (initialContext ?: ImmutableContext()).toBKTUser()
+                val result = initializeBKTClient(bktUser, context, config)
+                if (result == null || result is BKTException.TimeoutException) {
+                    // The BKTClient SDK has been initialized
+                    clientResolver = clientResolverFactory.getClientResolver()
+                    config.logger?.log(
+                        Log.INFO,
+                        { "Initialize successful with result: $result" },
+                        result,
+                    )
+                    eventHandler.publish(OpenFeatureEvents.ProviderReady)
+                } else {
+                    throw result
+                }
+            } catch (e: Exception) {
+                val errorMessage = "Failed with error $e"
+                config.logger?.log(Log.ERROR, { errorMessage }, e)
+                eventHandler.publish(OpenFeatureEvents.ProviderError(e))
+            }
+        }
+    }
+
+    private suspend fun initializeBKTClient(
+        user: BKTUser,
+        context: Context,
+        config: BKTConfig,
+    ): BKTException? {
+        val future =
+            clientResolverFactory.initialize(
+                context,
+                config,
+                user,
+            )
+        val result =
+            withContext(Dispatchers.IO) {
+                future.get()
+            }
+
+        return result
     }
 
     override fun getProviderStatus(): OpenFeatureEvents = eventHandler.getProviderStatus()
@@ -109,18 +168,34 @@ class BucketeerProvider() : FeatureProvider {
     ) {
         // Not support changing the targeting_id after initialization
         // Need to reinitialize the provider
-        val requiredClientResolver = requiredClientResolver()
-        val bktUser = newContext.toBKTUser()
-        val currentUser = requiredClientResolver.currentUser()
-        if (bktUser.id != currentUser.id) {
-            throw OpenFeatureError.InvalidContextError("Changing the targeting_id after initialization is not supported")
+        try {
+            val requiredClientResolver = requiredClientResolver()
+            val bktUser = newContext.toBKTUser()
+            val currentUser = requiredClientResolver.currentUser()
+            if (bktUser.id != currentUser.id) {
+                val error =
+                    OpenFeatureError.InvalidContextError(
+                        "Changing the targeting_id after initialization is not supported, please reinitialize the provider",
+                    )
+                eventHandler.publish(OpenFeatureEvents.ProviderError(error))
+            } else {
+                requiredClientResolver.updateUserAttributes(bktUser.attributes)
+            }
+        } catch (e: Exception) {
+            val errorMessage = "onContextSet failed with error $e"
+            config.logger?.log(Log.ERROR, { errorMessage }, e)
+            eventHandler.publish(OpenFeatureEvents.ProviderError(e))
         }
-        requiredClientResolver.updateUserAttributes(bktUser.attributes)
     }
 
     override fun shutdown() {
         if (::clientResolverFactory.isInitialized) {
-            clientResolverFactory.destroy()
+            try {
+                clientResolverFactory.destroy()
+            } catch (e: Exception) {
+                val errorMessage = "shutdown failed with error $e"
+                config.logger?.log(Log.ERROR, { errorMessage }, e)
+            }
         }
     }
 
