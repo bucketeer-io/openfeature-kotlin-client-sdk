@@ -29,6 +29,7 @@ class BucketeerProvider() : FeatureProvider {
     }
 
     override val hooks: List<Hook<*>> = emptyList()
+
     override val metadata: ProviderMetadata =
         object : ProviderMetadata {
             override val name: String = "BucketeerProvider"
@@ -70,8 +71,19 @@ class BucketeerProvider() : FeatureProvider {
         context: EvaluationContext?,
     ): ProviderEvaluation<Value> {
         val client = requiredClientResolver()
-        val evaluation = client.objectVariationDetails(key, defaultValue.toBKTValue()).toProviderEvaluationValue()
-        return evaluation
+        val defaultBKTValue = defaultValue.toBKTValue()
+        val bktEvaluation = client.objectVariationDetails(key, defaultBKTValue)
+        // If the value is the same as the default value, it indicates that the feature flag was not found,
+        // and the default value was used. In this case, we should return the default value to OpenFeature.
+        // There are differences between BKTValue and OpenFeatureValue.
+        // BKTValue does not support Value.date types, so we need to convert the BKTValue to Value.
+        // However, for the default value, we can directly return it without additional conversion.
+        val openfeatureEvaluation = bktEvaluation.toProviderEvaluationValue()
+        return if (bktEvaluation.variationValue == defaultBKTValue) {
+            return openfeatureEvaluation.copy(value = defaultValue)
+        } else {
+            openfeatureEvaluation
+        }
     }
 
     override fun getStringEvaluation(
@@ -106,9 +118,7 @@ class BucketeerProvider() : FeatureProvider {
     }
 
     private fun requiredClientResolver(): BKTClientResolver {
-        if (clientResolver == null) {
-            throw OpenFeatureError.ProviderNotReadyError("BKTClientResolver is not initialized")
-        }
-        return clientResolver!!
+        return clientResolver
+            ?: throw OpenFeatureError.ProviderNotReadyError("BKTClientResolver is not initialized")
     }
 }
