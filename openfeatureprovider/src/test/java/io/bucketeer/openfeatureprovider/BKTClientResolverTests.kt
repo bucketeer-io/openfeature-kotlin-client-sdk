@@ -1,0 +1,3 @@
+package io.bucketeer.openfeatureprovider
+
+class BKTClientResolverTests

@@ -10,7 +10,6 @@ import io.bucketeer.sdk.android.BKTUser
 import io.bucketeer.sdk.android.BKTValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.concurrent.Future
 
 // BKTClientResolver a sealed interface that provides methods to get feature variations from the BKTClient.
 internal interface BKTClientResolver {
@@ -58,12 +57,12 @@ internal interface BKTClientResolverFactory {
 }
 
 internal class DefaultBKTClientResolverFactory : BKTClientResolverFactory {
-
     private var clientResolver: BKTClientResolver? = null
 
     override fun getClientResolver(): BKTClientResolver {
-        val clientResolver = clientResolver
-            ?: throw OpenFeatureError.ProviderNotReadyError("BKTClientResolver is not initialized")
+        val clientResolver =
+            clientResolver
+                ?: throw OpenFeatureError.ProviderNotReadyError("BKTClientResolver is not initialized")
         return clientResolver
     }
 

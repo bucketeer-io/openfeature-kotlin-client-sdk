@@ -1,6 +1,8 @@
-package io.bucketeer.openfeatureprovider
+package io.bucketeer.openfeatureprovider.ext
 
 import dev.openfeature.sdk.Value
+import io.bucketeer.openfeatureprovider.toProviderEvaluation
+import io.bucketeer.openfeatureprovider.toProviderEvaluationValue
 import io.bucketeer.sdk.android.BKTEvaluationDetails
 import io.bucketeer.sdk.android.BKTValue
 import org.junit.Assert.assertEquals
