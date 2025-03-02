@@ -58,15 +58,13 @@ internal interface BKTClientResolverFactory {
 }
 
 internal class DefaultBKTClientResolverFactory : BKTClientResolverFactory {
-    private var client: BKTClient? = null
 
     private var clientResolver: BKTClientResolver? = null
 
     override fun getClientResolver(): BKTClientResolver {
-        if (clientResolver == null) {
-            throw OpenFeatureError.ProviderNotReadyError("BKTClientResolver is not initialized")
-        }
-        return clientResolver!!
+        val clientResolver = clientResolver
+            ?: throw OpenFeatureError.ProviderNotReadyError("BKTClientResolver is not initialized")
+        return clientResolver
     }
 
     override suspend fun initialize(
@@ -82,14 +80,12 @@ internal class DefaultBKTClientResolverFactory : BKTClientResolverFactory {
             }
         if (result == null || result is BKTException.TimeoutException) {
             val bktClient = BKTClient.getInstance()
-            client = bktClient
             clientResolver = DefaultBKTClientResolver(bktClient)
         }
         return result
     }
 
     override fun destroy() {
-        client = null
         BKTClient.destroy()
         clientResolver = null
     }
