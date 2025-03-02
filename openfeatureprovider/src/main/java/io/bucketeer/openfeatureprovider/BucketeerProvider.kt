@@ -118,7 +118,7 @@ class BucketeerProvider(
         coroutineScope.launch {
             try {
                 val bktUser = (initialContext ?: ImmutableContext()).toBKTUser()
-                val result = initializeBKTClient(bktUser, context, config)
+                val result = clientResolverFactory.initialize(context, config, user = bktUser)
                 if (result == null || result is BKTException.TimeoutException) {
                     // The BKTClient SDK has been initialized
                     clientResolver = clientResolverFactory.getClientResolver()
@@ -137,25 +137,6 @@ class BucketeerProvider(
                 eventHandler.publish(OpenFeatureEvents.ProviderError(e))
             }
         }
-    }
-
-    private suspend fun initializeBKTClient(
-        user: BKTUser,
-        context: Context,
-        config: BKTConfig,
-    ): BKTException? {
-        val future =
-            clientResolverFactory.initialize(
-                context,
-                config,
-                user,
-            )
-        val result =
-            withContext(Dispatchers.IO) {
-                future.get()
-            }
-
-        return result
     }
 
     override fun getProviderStatus(): OpenFeatureEvents = eventHandler.getProviderStatus()

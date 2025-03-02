@@ -8,6 +8,8 @@ import io.bucketeer.sdk.android.BKTEvaluationDetails
 import io.bucketeer.sdk.android.BKTException
 import io.bucketeer.sdk.android.BKTUser
 import io.bucketeer.sdk.android.BKTValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.concurrent.Future
 
 // BKTClientResolver a sealed interface that provides methods to get feature variations from the BKTClient.
@@ -45,12 +47,12 @@ internal interface BKTClientResolver {
 internal interface BKTClientResolverFactory {
     fun getClientResolver(): BKTClientResolver
 
-    fun initialize(
+    suspend fun initialize(
         context: Context,
         config: BKTConfig,
         user: BKTUser,
         timeoutMillis: Long = 5000,
-    ): Future<BKTException?>
+    ): BKTException?
 
     fun destroy()
 }
@@ -67,17 +69,23 @@ internal class DefaultBKTClientResolverFactory : BKTClientResolverFactory {
         return clientResolver!!
     }
 
-    override fun initialize(
+    override suspend fun initialize(
         context: Context,
         config: BKTConfig,
         user: BKTUser,
         timeoutMillis: Long,
-    ): Future<BKTException?> {
+    ): BKTException? {
         val future = BKTClient.initialize(context, config, user)
-        val bktClient = BKTClient.getInstance()
-        client = bktClient
-        clientResolver = DefaultBKTClientResolver(bktClient)
-        return future
+        val result =
+            withContext(Dispatchers.IO) {
+                future.get()
+            }
+        if (result == null || result is BKTException.TimeoutException) {
+            val bktClient = BKTClient.getInstance()
+            client = bktClient
+            clientResolver = DefaultBKTClientResolver(bktClient)
+        }
+        return result
     }
 
     override fun destroy() {
