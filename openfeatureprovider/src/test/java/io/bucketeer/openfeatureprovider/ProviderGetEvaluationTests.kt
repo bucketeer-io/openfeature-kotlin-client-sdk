@@ -1,4 +1,3 @@
 package io.bucketeer.openfeatureprovider
 
-class ProviderGetEvaluationTests {
-}
+class ProviderGetEvaluationTests

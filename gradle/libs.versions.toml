@@ -1,6 +1,8 @@
 [versions]
 agp = "8.8.2"
 bucketeerAndroidClientSdk = "2.2.1"
+coreKtxVersion = "1.6.1"
+kotlinxCoroutinesTest = "1.8.1"
 openfeatureAndroidSdk = "0.3.3"
 kotlin = "1.9.24"
 coreKtx = "1.15.0"
@@ -10,11 +12,14 @@ espressoCore = "3.6.1"
 
 [libraries]
 bucketeer-android-sdk = { module = "io.bucketeer:android-client-sdk", version.ref = "bucketeerAndroidClientSdk" }
+androidx-test-core-ktx = { module = "androidx.test:core-ktx", version.ref = "coreKtxVersion" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 openfeature-android-sdk = { module = "dev.openfeature:android-sdk", version.ref = "openfeatureAndroidSdk" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+robolectric = { module = "org.robolectric:robolectric", version = "4.14.1" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

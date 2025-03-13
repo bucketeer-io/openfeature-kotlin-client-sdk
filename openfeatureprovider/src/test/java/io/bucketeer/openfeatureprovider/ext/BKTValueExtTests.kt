@@ -15,6 +15,13 @@ class BKTValueExtTests {
                     BKTValue.String("test1"),
                     BKTValue.Number(42.0),
                     BKTValue.Boolean(true),
+                    BKTValue.Structure(
+                        mapOf(
+                            "key1" to BKTValue.String("value1"),
+                            "key2" to BKTValue.Number(42.0),
+                        ),
+                    ),
+                    BKTValue.Null,
                 ),
             )
         val value = bktValue.toValue()
@@ -24,6 +31,13 @@ class BKTValueExtTests {
                     Value.String("test1"),
                     Value.Double(42.0),
                     Value.Boolean(true),
+                    Value.Structure(
+                        mapOf(
+                            "key1" to Value.String("value1"),
+                            "key2" to Value.Double(42.0),
+                        ),
+                    ),
+                    Value.Null,
                 ),
             ),
             value,

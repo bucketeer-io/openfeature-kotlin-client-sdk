@@ -1,4 +1,3 @@
 package io.bucketeer.openfeatureprovider
 
-class ProviderValidateContextTests {
-}
+class ProviderValidateContextTests
