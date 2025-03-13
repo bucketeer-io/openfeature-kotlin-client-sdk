@@ -130,7 +130,7 @@ class BucketeerProvider(
                     throw result
                 }
             } catch (e: Exception) {
-                val errorMessage = "Failed with error $e"
+                val errorMessage = "Initialize failed with error $e"
                 config.logger?.log(Log.ERROR, { errorMessage }, e)
                 eventHandler.publish(OpenFeatureEvents.ProviderError(e))
             }
@@ -152,11 +152,9 @@ class BucketeerProvider(
             val bktUser = newContext.toBKTUser()
             val currentUser = requiredClientResolver.currentUser()
             if (bktUser.id != currentUser.id) {
-                val error =
-                    OpenFeatureError.InvalidContextError(
-                        "Changing the targeting_id after initialization is not supported, please reinitialize the provider",
-                    )
-                eventHandler.publish(OpenFeatureEvents.ProviderError(error))
+                throw OpenFeatureError.InvalidContextError(
+                    "Changing the targeting_id after initialization is not supported, please reinitialize the provider",
+                )
             } else {
                 requiredClientResolver.updateUserAttributes(bktUser.attributes)
             }
