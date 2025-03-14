@@ -25,7 +25,7 @@ class BucketeerProvider(
     private val coroutineScope: CoroutineScope,
 ) : FeatureProvider {
     private val eventHandler = EventHandler(Dispatchers.IO)
-    private var clientResolver: BKTClientResolver? = null
+    internal var clientResolver: BKTClientResolver? = null
     private lateinit var clientResolverFactory: BKTClientResolverFactory
 
     // For testing purposes

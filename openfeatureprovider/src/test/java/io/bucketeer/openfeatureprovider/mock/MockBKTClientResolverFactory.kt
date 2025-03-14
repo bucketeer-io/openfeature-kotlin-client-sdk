@@ -10,8 +10,8 @@ import io.bucketeer.sdk.android.BKTUser
 internal class MockBKTClientResolverFactory(
     private val client: MockBKTClientResolver,
 ) : BKTClientResolverFactory {
-    var user: BKTUser? = null
-    var config: BKTConfig? = null
+    private var user: BKTUser? = null
+    private var config: BKTConfig? = null
     var onDestroy: (() -> Unit)? = null
     var onInitializeError: BKTException? = null
 

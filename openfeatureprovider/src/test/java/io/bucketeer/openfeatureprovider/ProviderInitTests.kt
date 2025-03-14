@@ -56,116 +56,145 @@ internal class ProviderInitTests {
     }
 
     @Test
-    fun initializeFailWithNilContext() = runTest(timeout = 500.milliseconds) {
-        val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
-
-        val eventDeferred = async {
-            provider.observe().take(1).first()
+    fun getMetadataReturnsCorrectMetadata() =
+        runTest {
+            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            assertEquals("BucketeerProvider", provider.metadata.name)
         }
-
-        provider.initialize(null)
-        val expectedEvent = eventDeferred.await()
-
-        advanceUntilIdle()
-
-        assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
-        assertEquals("missing targeting key", (expectedEvent as OpenFeatureEvents.ProviderError).error.message)
-    }
 
     @Test
-    fun initializeFailMissingTargetingKey() = runTest(timeout = 500.milliseconds) {
-        val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
-        val evaluationContext =
-            ImmutableContext(
-                attributes = mapOf("attr1" to Value.String("value1")),
-            )
-        val eventDeferred = async {
-            provider.observe().take(1).first()
+    fun initializeFailWithNilContext() =
+        runTest(timeout = 500.milliseconds) {
+            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+
+            val eventDeferred =
+                async {
+                    provider.observe().take(1).first()
+                }
+
+            provider.initialize(null)
+            val expectedEvent = eventDeferred.await()
+
+            advanceUntilIdle()
+
+            assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
+            assertEquals("missing targeting key", (expectedEvent as OpenFeatureEvents.ProviderError).error.message)
         }
-
-        provider.initialize(null)
-        val expectedEvent = eventDeferred.await()
-
-        advanceUntilIdle()
-
-        assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
-        assertEquals("missing targeting key", (expectedEvent as OpenFeatureEvents.ProviderError).error.message)
-    }
 
     @Test
-    fun initializeFailWithError() = runTest(timeout = 500.milliseconds) {
-        mockBKTClientResolverFactory.onInitializeError = BKTException.ForbiddenException("ForbiddenException")
-        val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
-        val evaluationContext =
-            ImmutableContext(
-                targetingKey = "user1",
-                attributes = mapOf("attr1" to Value.String("value1")),
-            )
-        val eventDeferred = async {
-            provider.observe().take(1).first()
+    fun initializeFailMissingTargetingKey() =
+        runTest(timeout = 500.milliseconds) {
+            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            val evaluationContext =
+                ImmutableContext(
+                    attributes = mapOf("attr1" to Value.String("value1")),
+                )
+            val eventDeferred =
+                async {
+                    provider.observe().take(1).first()
+                }
+
+            provider.initialize(null)
+            val expectedEvent = eventDeferred.await()
+
+            advanceUntilIdle()
+
+            assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
+            assertEquals("missing targeting key", (expectedEvent as OpenFeatureEvents.ProviderError).error.message)
         }
-
-        provider.initialize(evaluationContext)
-        val expectedEvent = eventDeferred.await()
-
-        advanceUntilIdle()
-
-        assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
-        assertEquals("ForbiddenException", (expectedEvent as OpenFeatureEvents.ProviderError).error.message)
-    }
 
     @Test
-    fun notReadyProviderStatus() = runTest(timeout = 500.milliseconds) {
-        val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
-        try {
-            provider.getDoubleEvaluation("feature_id", 0.0, null)
-            fail("Provider should throw an exception")
-        } catch (e: Exception) {
-            assertTrue(e is OpenFeatureError.ProviderNotReadyError)
-            assertEquals("BKTClientResolver is not initialized", e.message)
+    fun initializeFailWithError() =
+        runTest(timeout = 500.milliseconds) {
+            mockBKTClientResolverFactory.onInitializeError = BKTException.ForbiddenException("ForbiddenException")
+            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            val evaluationContext =
+                ImmutableContext(
+                    targetingKey = "user1",
+                    attributes = mapOf("attr1" to Value.String("value1")),
+                )
+            val eventDeferred =
+                async {
+                    provider.observe().take(1).first()
+                }
+
+            provider.initialize(evaluationContext)
+            val expectedEvent = eventDeferred.await()
+
+            advanceUntilIdle()
+
+            assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
+            assertEquals("ForbiddenException", (expectedEvent as OpenFeatureEvents.ProviderError).error.message)
         }
-    }
 
     @Test
-    fun initializeSuccess () = runTest(timeout = 500.milliseconds) {
-        val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
-        val evaluationContext =
-            ImmutableContext(
-                targetingKey = "user1",
-                attributes = mapOf("attr1" to Value.String("value1")),
-            )
-        val eventDeferred = async {
-            provider.observe().take(1).first()
+    fun notReadyProviderStatus() =
+        runTest(timeout = 500.milliseconds) {
+            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            try {
+                provider.getDoubleEvaluation("feature_id", 0.0, null)
+                fail("Provider should throw an exception")
+            } catch (e: Exception) {
+                assertTrue(e is OpenFeatureError.ProviderNotReadyError)
+                assertEquals("BKTClientResolver is not initialized", e.message)
+            }
         }
-
-        provider.initialize(evaluationContext)
-        val expectedEvent = eventDeferred.await()
-
-        advanceUntilIdle()
-
-        assertTrue(expectedEvent is OpenFeatureEvents.ProviderReady)
-        assertEquals(mockBKTClientResolver.currentUser(), evaluationContext.toBKTUser())
-    }
 
     @Test
-    fun initializeSuccessButReceivedTimeoutError() = runTest(timeout = 500.milliseconds) {
-        mockBKTClientResolverFactory.onInitializeError = BKTException.TimeoutException("TimeoutException", null, 1000L)
-        val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
-        val evaluationContext =
-            ImmutableContext(
-                targetingKey = "user1",
-                attributes = mapOf("attr1" to Value.String("value1")),
-            )
-        val eventDeferred = async {
-            provider.observe().take(1).first()
+    fun initializeSuccess() =
+        runTest(timeout = 500.milliseconds) {
+            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            val evaluationContext =
+                ImmutableContext(
+                    targetingKey = "user1",
+                    attributes = mapOf("attr1" to Value.String("value1")),
+                )
+            val eventDeferred =
+                async {
+                    provider.observe().take(1).first()
+                }
+
+            provider.initialize(evaluationContext)
+            val expectedEvent = eventDeferred.await()
+
+            advanceUntilIdle()
+
+            assertTrue(expectedEvent is OpenFeatureEvents.ProviderReady)
+            assertEquals(mockBKTClientResolver.currentUser(), evaluationContext.toBKTUser())
+
+            var didCallShutdown = false
+            mockBKTClientResolverFactory.onDestroy = {
+                didCallShutdown = true
+            }
+
+            // Cleanup check
+            provider.shutdown()
+
+            assertTrue(didCallShutdown)
+            assertTrue(provider.clientResolver == null)
         }
 
-        provider.initialize(evaluationContext)
-        val expectedEvent = eventDeferred.await()
+    @Test
+    fun initializeSuccessButReceivedTimeoutError() =
+        runTest(timeout = 500.milliseconds) {
+            mockBKTClientResolverFactory.onInitializeError = BKTException.TimeoutException("TimeoutException", null, 1000L)
+            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            val evaluationContext =
+                ImmutableContext(
+                    targetingKey = "user1",
+                    attributes = mapOf("attr1" to Value.String("value1")),
+                )
+            val eventDeferred =
+                async {
+                    provider.observe().take(1).first()
+                }
 
-        advanceUntilIdle()
+            provider.initialize(evaluationContext)
+            val expectedEvent = eventDeferred.await()
 
-        assertTrue(expectedEvent is OpenFeatureEvents.ProviderReady)
-        assertEquals(mockBKTClientResolver.currentUser(), evaluationContext.toBKTUser())
-    }
+            advanceUntilIdle()
+
+            assertTrue(expectedEvent is OpenFeatureEvents.ProviderReady)
+            assertEquals(mockBKTClientResolver.currentUser(), evaluationContext.toBKTUser())
+        }
 }

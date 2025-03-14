@@ -49,10 +49,11 @@ internal class ProviderValidateContextTests {
                 .appVersion("1.2.3")
                 .build()
         provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, testScope)
-        initContext = ImmutableContext(
-            targetingKey = "user1",
-            attributes = mapOf("attr1" to Value.String("value1")),
-        )
+        initContext =
+            ImmutableContext(
+                targetingKey = "user1",
+                attributes = mapOf("attr1" to Value.String("value1")),
+            )
     }
 
     @After
@@ -61,9 +62,10 @@ internal class ProviderValidateContextTests {
 
     private suspend fun requiredInitSuccess() {
         val evaluationContext = initContext
-        val eventDeferred = testScope.async {
-            provider.observe().take(1).first()
-        }
+        val eventDeferred =
+            testScope.async {
+                provider.observe().take(1).first()
+            }
 
         provider.initialize(evaluationContext)
         val expectedEvent = eventDeferred.await()
@@ -71,67 +73,72 @@ internal class ProviderValidateContextTests {
     }
 
     @Test
-    fun onNewContextIsInvalidMissingTargetingKey() = testScope.runTest(timeout = 500.milliseconds) {
-        requiredInitSuccess()
-        val evaluationContext =
-            ImmutableContext(
-                targetingKey = "",
-                attributes = mapOf("attr1" to Value.String("value1")),
+    fun onNewContextIsInvalidMissingTargetingKey() =
+        testScope.runTest(timeout = 500.milliseconds) {
+            requiredInitSuccess()
+            val evaluationContext =
+                ImmutableContext(
+                    targetingKey = "",
+                    attributes = mapOf("attr1" to Value.String("value1")),
+                )
+            val eventDeferred =
+                testScope.async {
+                    provider.observe().take(1).first()
+                }
+
+            provider.onContextSet(initContext, evaluationContext)
+            val expectedEvent = eventDeferred.await()
+            assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
+            assertEquals(
+                "missing targeting key",
+                (expectedEvent as OpenFeatureEvents.ProviderError).error.message,
             )
-        val eventDeferred = testScope.async {
-            provider.observe().take(1).first()
         }
 
-        provider.onContextSet(initContext, evaluationContext)
-        val expectedEvent = eventDeferred.await()
-        assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
-        assertEquals(
-            "missing targeting key",
-            (expectedEvent as OpenFeatureEvents.ProviderError).error.message
-        )
-    }
-
     @Test
-    fun onNewContextIsChangeUserIdShouldFail() = testScope.runTest(timeout = 500.milliseconds) {
-        requiredInitSuccess()
-        val evaluationContext =
-            ImmutableContext(
-                targetingKey = "1",
-                attributes = mapOf("attr1" to Value.String("value1")),
+    fun onNewContextIsChangeUserIdShouldFail() =
+        testScope.runTest(timeout = 500.milliseconds) {
+            requiredInitSuccess()
+            val evaluationContext =
+                ImmutableContext(
+                    targetingKey = "1",
+                    attributes = mapOf("attr1" to Value.String("value1")),
+                )
+            val eventDeferred =
+                testScope.async {
+                    provider.observe().take(1).first()
+                }
+
+            provider.onContextSet(initContext, evaluationContext)
+            val expectedEvent = eventDeferred.await()
+            assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
+            assertEquals(
+                "Changing the targeting_id after initialization is not supported, please reinitialize the provider",
+                (expectedEvent as OpenFeatureEvents.ProviderError).error.message,
             )
-        val eventDeferred = testScope.async {
-            provider.observe().take(1).first()
         }
 
-        provider.onContextSet(initContext, evaluationContext)
-        val expectedEvent = eventDeferred.await()
-        assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
-        assertEquals(
-            "Changing the targeting_id after initialization is not supported, please reinitialize the provider",
-            (expectedEvent as OpenFeatureEvents.ProviderError).error.message
-        )
-    }
-
     @Test
-    fun onNewContextChangeAttributesShouldSuccess() = testScope.runTest {
-        requiredInitSuccess()
-        val evaluationContext =
-            ImmutableContext(
-                targetingKey = "user1",
-                attributes = mapOf(
-                    "attr1" to Value.String("value_test"),
-                    "attr12" to Value.Double(3.2)
-                ),
-            )
+    fun onNewContextChangeAttributesShouldSuccess() =
+        testScope.runTest {
+            requiredInitSuccess()
+            val evaluationContext =
+                ImmutableContext(
+                    targetingKey = "user1",
+                    attributes =
+                        mapOf(
+                            "attr1" to Value.String("value_test"),
+                            "attr12" to Value.Double(3.2),
+                        ),
+                )
 
-        provider.onContextSet(initContext, evaluationContext)
+            provider.onContextSet(initContext, evaluationContext)
 
-        val userAttributes = mockBKTClientResolver.userAttributes
-        val expectedUserAttributes = evaluationContext.toBKTUser().attributes
-        assertEquals(userAttributes, expectedUserAttributes)
+            val userAttributes = mockBKTClientResolver.userAttributes
+            val expectedUserAttributes = evaluationContext.toBKTUser().attributes
+            assertEquals(userAttributes, expectedUserAttributes)
 
-        val status = provider.getProviderStatus()
-        assertTrue(status is OpenFeatureEvents.ProviderReady)
-    }
-
+            val status = provider.getProviderStatus()
+            assertTrue(status is OpenFeatureEvents.ProviderReady)
+        }
 }
