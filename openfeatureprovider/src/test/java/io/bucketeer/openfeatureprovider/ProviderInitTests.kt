@@ -144,6 +144,7 @@ internal class ProviderInitTests {
         advanceUntilIdle()
 
         assertTrue(expectedEvent is OpenFeatureEvents.ProviderReady)
+        assertEquals(mockBKTClientResolver.currentUser(), evaluationContext.toBKTUser())
     }
 
     @Test
@@ -165,5 +166,6 @@ internal class ProviderInitTests {
         advanceUntilIdle()
 
         assertTrue(expectedEvent is OpenFeatureEvents.ProviderReady)
+        assertEquals(mockBKTClientResolver.currentUser(), evaluationContext.toBKTUser())
     }
 }
