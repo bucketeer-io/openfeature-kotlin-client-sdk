@@ -8,10 +8,12 @@ import dev.openfeature.sdk.events.OpenFeatureEvents
 import io.bucketeer.openfeatureprovider.mock.MockBKTClientResolver
 import io.bucketeer.openfeatureprovider.mock.MockBKTClientResolverFactory
 import io.bucketeer.sdk.android.BKTConfig
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -24,6 +26,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
 import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 internal class ProviderValidateContextTests {
     private lateinit var activityController: ActivityController<Activity>
@@ -88,6 +91,8 @@ internal class ProviderValidateContextTests {
 
             provider.onContextSet(initContext, evaluationContext)
             val expectedEvent = eventDeferred.await()
+            advanceUntilIdle()
+
             assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
             assertEquals(
                 "missing targeting key",
@@ -111,6 +116,8 @@ internal class ProviderValidateContextTests {
 
             provider.onContextSet(initContext, evaluationContext)
             val expectedEvent = eventDeferred.await()
+            advanceUntilIdle()
+
             assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
             assertEquals(
                 "Changing the targeting_id after initialization is not supported, please reinitialize the provider",
@@ -133,7 +140,7 @@ internal class ProviderValidateContextTests {
                 )
 
             provider.onContextSet(initContext, evaluationContext)
-
+            advanceUntilIdle()
             val userAttributes = mockBKTClientResolver.userAttributes
             val expectedUserAttributes = evaluationContext.toBKTUser().attributes
             assertEquals(userAttributes, expectedUserAttributes)
