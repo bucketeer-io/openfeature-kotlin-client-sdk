@@ -60,5 +60,4 @@ class GetEvaluationsTest {
             Assert.assertEquals("BucketeerProvider", provider.metadata.name)
         }
     }
-
 }

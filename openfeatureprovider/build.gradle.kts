@@ -24,10 +24,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
 
-        val API_KEY = properties.getProperty("api_key") ?: System.getenv("API_KEY")
-        val API_ENDPOINT = properties.getProperty("api_endpoint") ?: System.getenv("API_ENDPOINT")
-        buildConfigField("String", "API_KEY", "\"${API_KEY}\"")
-        buildConfigField("String", "API_ENDPOINT", "\"${API_ENDPOINT}\"")
+        val apiKey = properties.getProperty("api_key") ?: System.getenv("API_KEY")
+        val apiEndpoint = properties.getProperty("api_endpoint") ?: System.getenv("API_ENDPOINT")
+        buildConfigField("String", "API_KEY", "\"${apiKey}\"")
+        buildConfigField("String", "API_ENDPOINT", "\"${apiEndpoint}\"")
     }
 
     buildTypes {
