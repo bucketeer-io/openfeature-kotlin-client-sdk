@@ -2,13 +2,15 @@
 agp = "8.8.2"
 bucketeerAndroidClientSdk = "2.2.1"
 coreKtxVersion = "1.6.1"
+androidxLifecycle = "2.8.7"
 kotlinxCoroutinesTest = "1.8.1"
 openfeatureAndroidSdk = "0.3.3"
-kotlin = "1.9.24"
+kotlin = "2.1.10"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
+coroutines = "1.10.1"
 
 [libraries]
 bucketeer-android-sdk = { module = "io.bucketeer:android-client-sdk", version.ref = "bucketeerAndroidClientSdk" }
@@ -21,8 +23,18 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 robolectric = { module = "org.robolectric:robolectric", version = "4.14.1" }
 
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
+androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime", version.ref = "androidxLifecycle" }
+androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidxLifecycle" }
+
+materialComponents = { module = "com.google.android.material:material", version = "1.12.0" }
+kotlin-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+publish = { id = "com.vanniktech.maven.publish", version = "0.30.0" }
+ksp = { id = "com.google.devtools.ksp", version = "2.1.10-1.0.29" }
+kotlinter = { id = "org.jmailen.kotlinter", version = "5.0.1" }
 

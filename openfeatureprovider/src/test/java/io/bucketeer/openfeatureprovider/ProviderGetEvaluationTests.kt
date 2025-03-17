@@ -183,12 +183,12 @@ internal class ProviderGetEvaluationTests {
                     variationId = "variation1",
                     variationName = "variation1",
                     variationValue =
-                    BKTValue.Structure(
-                        mapOf(
-                            "key1" to BKTValue.String("value1"),
-                            "key2" to BKTValue.Number(42.0),
+                        BKTValue.Structure(
+                            mapOf(
+                                "key1" to BKTValue.String("value1"),
+                                "key2" to BKTValue.Number(42.0),
+                            ),
                         ),
-                    ),
                     reason = BKTEvaluationDetails.Reason.PREREQUISITE,
                 )
 
@@ -196,12 +196,12 @@ internal class ProviderGetEvaluationTests {
                 provider.getObjectEvaluation("feature1", Value.String("default"), null)
             assertTrue(
                 providerEvaluation.value ==
-                        Value.Structure(
-                            mapOf(
-                                "key1" to Value.String("value1"),
-                                "key2" to Value.Double(42.0),
-                            ),
+                    Value.Structure(
+                        mapOf(
+                            "key1" to Value.String("value1"),
+                            "key2" to Value.Double(42.0),
                         ),
+                    ),
             )
             assertTrue(providerEvaluation.variant == "variation1")
             assertTrue(providerEvaluation.reason == "PREREQUISITE")
