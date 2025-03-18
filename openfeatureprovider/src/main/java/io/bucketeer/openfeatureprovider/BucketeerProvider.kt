@@ -170,6 +170,7 @@ class BucketeerProvider(
             try {
                 clientResolver = null
                 clientResolverFactory.destroy()
+                config.logger?.log(Log.INFO, { "BucketeerProvider shutdown success" }, null)
             } catch (e: Exception) {
                 val errorMessage = "shutdown failed with error $e"
                 config.logger?.log(Log.ERROR, { errorMessage }, e)
