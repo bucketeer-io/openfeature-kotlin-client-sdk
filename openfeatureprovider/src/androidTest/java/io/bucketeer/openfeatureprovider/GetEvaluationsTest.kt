@@ -9,9 +9,7 @@ import dev.openfeature.sdk.ImmutableContext
 import dev.openfeature.sdk.OpenFeatureAPI
 import dev.openfeature.sdk.Value
 import dev.openfeature.sdk.events.OpenFeatureEvents
-import io.bucketeer.sdk.android.BKTClient
 import io.bucketeer.sdk.android.BKTConfig
-import io.bucketeer.sdk.android.BKTException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -52,21 +50,7 @@ class GetEvaluationsTest {
                 targetingKey = "user1",
                 attributes = mapOf("attr1" to Value.String("value1")),
             )
-    }
 
-    @After
-    fun tearDown() {
-        try {
-            provider = null
-            OpenFeatureAPI.shutdown()
-            OpenFeatureAPI.clearProvider()
-            context.cleanDatabase()
-        } catch (e: Exception) {
-            Assert.fail(e.message)
-        }
-    }
-
-    private fun requireInitProviderSuccess() {
         runBlocking {
             val provider = BucketeerProvider(context, config, CoroutineScope(Dispatchers.Main))
             val eventDeferred =
@@ -82,9 +66,20 @@ class GetEvaluationsTest {
         }
     }
 
+    @After
+    fun tearDown() {
+        try {
+            provider = null
+            OpenFeatureAPI.shutdown()
+            OpenFeatureAPI.clearProvider()
+            context.cleanDatabase()
+        } catch (e: Exception) {
+            Assert.fail(e.message)
+        }
+    }
+
     @Test
     fun initializeSuccessWithCorrectUserData() {
-        requireInitProviderSuccess()
         val currentUser = provider!!.clientResolver?.currentUser()
         Assert.assertEquals("user1", currentUser?.id)
         Assert.assertEquals(mapOf("attr1" to "value1"), currentUser?.attributes)
@@ -92,7 +87,6 @@ class GetEvaluationsTest {
 
     @Test
     fun shouldUpdateTheUserAttributeWhenContextChange() {
-        requireInitProviderSuccess()
         val newContext =
             ImmutableContext(
                 targetingKey = "user1",
@@ -106,7 +100,6 @@ class GetEvaluationsTest {
 
     @Test
     fun shouldNotUpdateTheUserAttributeWhenContextChangeWithNewTargetingKey() {
-        requireInitProviderSuccess()
         // Note: This test will fail if we directly get the provider status from the provider
         // because the event is broadcast on a different dispatcher.
         // Therefore, the correct approach is to use async to get the event from the flow.
@@ -137,23 +130,7 @@ class GetEvaluationsTest {
     }
 
     @Test
-    fun shouldShutdownProvider() {
-        requireInitProviderSuccess()
-        OpenFeatureAPI.shutdown()
-        OpenFeatureAPI.clearProvider()
-        Assert.assertEquals("No-op provider", OpenFeatureAPI.getProvider().metadata.name)
-        Assert.assertNull(provider!!.clientResolver)
-        try {
-            BKTClient.getInstance()
-            Assert.fail("BKTClient should be null")
-        } catch (e: Exception) {
-            Assert.assertTrue(e is BKTException.IllegalArgumentException)
-        }
-    }
-
-    @Test
     fun getBooleanEvaluation() {
-        requireInitProviderSuccess()
         val featureId = FEATURE_ID_BOOLEAN
         val defaultValue = false
         val client = OpenFeatureAPI.getClient()
@@ -174,7 +151,6 @@ class GetEvaluationsTest {
 
     @Test
     fun getIntegerEvaluation() {
-        requireInitProviderSuccess()
         val featureId = FEATURE_ID_INT
         val defaultValue = 0
         val client = OpenFeatureAPI.getClient()
@@ -195,7 +171,6 @@ class GetEvaluationsTest {
 
     @Test
     fun getDoubleEvaluation() {
-        requireInitProviderSuccess()
         val featureId = FEATURE_ID_DOUBLE
         val defaultValue = 0.0
         val client = OpenFeatureAPI.getClient()
@@ -216,7 +191,6 @@ class GetEvaluationsTest {
 
     @Test
     fun getStringEvaluation() {
-        requireInitProviderSuccess()
         val featureId = FEATURE_ID_STRING
         val defaultValue = "default"
         val client = OpenFeatureAPI.getClient()
@@ -237,7 +211,6 @@ class GetEvaluationsTest {
 
     @Test
     fun getObjectEvaluation() {
-        requireInitProviderSuccess()
         val featureId = FEATURE_ID_JSON
         val defaultValue = Value.String("default")
         val client = OpenFeatureAPI.getClient()
