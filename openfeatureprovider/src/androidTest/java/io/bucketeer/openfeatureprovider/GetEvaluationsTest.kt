@@ -4,11 +4,14 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.openfeature.sdk.EvaluationContext
+import dev.openfeature.sdk.FlagEvaluationDetails
 import dev.openfeature.sdk.ImmutableContext
 import dev.openfeature.sdk.OpenFeatureAPI
 import dev.openfeature.sdk.Value
 import dev.openfeature.sdk.events.OpenFeatureEvents
+import io.bucketeer.sdk.android.BKTClient
 import io.bucketeer.sdk.android.BKTConfig
+import io.bucketeer.sdk.android.BKTException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -29,8 +32,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class GetEvaluationsTest {
     private var provider: BucketeerProvider? = null
-    lateinit var initContext: EvaluationContext
-    lateinit var config: BKTConfig
+    private lateinit var initContext: EvaluationContext
+    private lateinit var config: BKTConfig
     private lateinit var context: Context
 
     @Before
@@ -131,5 +134,125 @@ class GetEvaluationsTest {
                 Assert.assertTrue(e is IllegalStateException)
             }
         }
+    }
+
+    @Test
+    fun shouldShutdownProvider() {
+        requireInitProviderSuccess()
+        OpenFeatureAPI.shutdown()
+        OpenFeatureAPI.clearProvider()
+        Assert.assertEquals("No-op provider", OpenFeatureAPI.getProvider().metadata.name)
+        Assert.assertNull(provider!!.clientResolver)
+        try {
+            BKTClient.getInstance()
+            Assert.fail("BKTClient should be null")
+        } catch (e: Exception) {
+            Assert.assertTrue(e is BKTException.IllegalArgumentException)
+        }
+    }
+
+    @Test
+    fun getBooleanEvaluation() {
+        requireInitProviderSuccess()
+        val featureId = FEATURE_ID_BOOLEAN
+        val defaultValue = false
+        val client = OpenFeatureAPI.getClient()
+        val evaluation = client.getBooleanValue(featureId, defaultValue)
+        Assert.assertTrue(evaluation)
+
+        val evaluationDetails = client.getBooleanDetails(featureId, defaultValue)
+        val expectedEvaluationDetails =
+            FlagEvaluationDetails(
+                value = true,
+                flagKey = featureId,
+                reason = "DEFAULT",
+                variant = "variation true",
+            )
+
+        Assert.assertEquals(expectedEvaluationDetails, evaluationDetails)
+    }
+
+    @Test
+    fun getIntegerEvaluation() {
+        requireInitProviderSuccess()
+        val featureId = FEATURE_ID_INT
+        val defaultValue = 0
+        val client = OpenFeatureAPI.getClient()
+        val evaluation = client.getIntegerValue(featureId, defaultValue)
+        Assert.assertEquals(10, evaluation)
+
+        val evaluationDetails = client.getIntegerDetails(featureId, defaultValue)
+        val expectedEvaluationDetails =
+            FlagEvaluationDetails(
+                value = 10,
+                flagKey = featureId,
+                reason = "DEFAULT",
+                variant = "variation 10",
+            )
+
+        Assert.assertEquals(expectedEvaluationDetails, evaluationDetails)
+    }
+
+    @Test
+    fun getDoubleEvaluation() {
+        requireInitProviderSuccess()
+        val featureId = FEATURE_ID_DOUBLE
+        val defaultValue = 0.0
+        val client = OpenFeatureAPI.getClient()
+        val evaluation = client.getDoubleValue(featureId, defaultValue)
+        Assert.assertEquals(2.1, evaluation, 0.0)
+
+        val evaluationDetails = client.getDoubleDetails(featureId, defaultValue)
+        val expectedEvaluationDetails =
+            FlagEvaluationDetails(
+                value = 2.1,
+                flagKey = featureId,
+                reason = "DEFAULT",
+                variant = "variation 2.1",
+            )
+
+        Assert.assertEquals(expectedEvaluationDetails, evaluationDetails)
+    }
+
+    @Test
+    fun getStringEvaluation() {
+        requireInitProviderSuccess()
+        val featureId = FEATURE_ID_STRING
+        val defaultValue = "default"
+        val client = OpenFeatureAPI.getClient()
+        val evaluation = client.getStringValue(featureId, defaultValue)
+        Assert.assertEquals("value-1", evaluation)
+
+        val evaluationDetails = client.getStringDetails(featureId, defaultValue)
+        val expectedEvaluationDetails =
+            FlagEvaluationDetails(
+                value = "value-1",
+                flagKey = featureId,
+                reason = "DEFAULT",
+                variant = "variation 1",
+            )
+
+        Assert.assertEquals(expectedEvaluationDetails, evaluationDetails)
+    }
+
+    @Test
+    fun getObjectEvaluation() {
+        requireInitProviderSuccess()
+        val featureId = FEATURE_ID_JSON
+        val defaultValue = Value.String("default")
+        val client = OpenFeatureAPI.getClient()
+        val evaluation = client.getObjectValue(featureId, defaultValue)
+        Assert.assertEquals(Value.Structure(mapOf("key" to Value.String("value-1"))), evaluation)
+
+        val evaluationDetails = client.getObjectDetails(featureId, defaultValue)
+        val expectedEvaluationDetails =
+            FlagEvaluationDetails(
+                value = Value.Structure(mapOf("key" to Value.String("value-1"))),
+                flagKey = featureId,
+                reason = "DEFAULT",
+                variant = "variation 1",
+            )
+
+        Assert.assertEquals(expectedEvaluationDetails, evaluationDetails)
     }
 }
