@@ -11,6 +11,9 @@ import dev.openfeature.sdk.events.OpenFeatureEvents
 import io.bucketeer.sdk.android.BKTConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert
@@ -46,8 +49,6 @@ class GetEvaluationsTest {
                 targetingKey = "user1",
                 attributes = mapOf("attr1" to Value.String("value1")),
             )
-
-
     }
 
     @After
@@ -65,9 +66,15 @@ class GetEvaluationsTest {
     private fun requireInitProviderSuccess() {
         runBlocking {
             val provider = BucketeerProvider(context, config, CoroutineScope(Dispatchers.Main))
+            val eventDeferred =
+                async {
+                    val event = provider.observe().take(1).first()
+                    return@async event
+                }
             OpenFeatureAPI.setProviderAndWait(provider, Dispatchers.Main, initContext)
+            val expectedEvent = eventDeferred.await()
+            Assert.assertEquals(expectedEvent, OpenFeatureEvents.ProviderReady)
             Assert.assertEquals("BucketeerProvider", OpenFeatureAPI.getProvider().metadata.name)
-            Assert.assertEquals(OpenFeatureAPI.getProvider().getProviderStatus(), OpenFeatureEvents.ProviderReady)
             this@GetEvaluationsTest.provider = provider
         }
     }
@@ -83,42 +90,46 @@ class GetEvaluationsTest {
     @Test
     fun shouldUpdateTheUserAttributeWhenContextChange() {
         requireInitProviderSuccess()
-        val newContext = ImmutableContext(targetingKey = "user1", attributes = mapOf("attr2" to Value.String("value2")))
+        val newContext =
+            ImmutableContext(
+                targetingKey = "user1",
+                attributes = mapOf("attr2" to Value.String("value2")),
+            )
         OpenFeatureAPI.setEvaluationContext(newContext)
         val currentUser = provider!!.clientResolver?.currentUser()
         Assert.assertEquals("user1", currentUser?.id)
         Assert.assertEquals(mapOf("attr2" to "value2"), currentUser?.attributes)
     }
 
-//    @OptIn(ExperimentalCoroutinesApi::class)
-//    @Test
-//    fun shouldNotUpdateTheUserAttributeWhenContextChangeWithNewTargetingKey() {
-////        requireInitProviderSuccess()
-//        runBlocking {
-//            val provider = BucketeerProvider(context, config, CoroutineScope(Dispatchers.Main))
-//            OpenFeatureAPI.setProviderAndWait(provider, Dispatchers.Main, initContext)
-//            Assert.assertEquals("BucketeerProvider", OpenFeatureAPI.getProvider().metadata.name)
-//            Assert.assertEquals(OpenFeatureAPI.getProvider().getProviderStatus(), OpenFeatureEvents.ProviderReady)
-//            this@GetEvaluationsTest.provider = provider
-//            try {
-//               val eventDeferred =
-//                   async {
-//                       OpenFeatureAPI.getProvider().observe().collect{
-//                           println("event: $it")
-//                       }
-//                       val event = OpenFeatureAPI.getProvider().observe().take(1).first()
-//                       return@async event
-//                   }
-//                val newContext = ImmutableContext(targetingKey = "user2", attributes = mapOf("attr2" to Value.String("value2")))
-//                OpenFeatureAPI.setEvaluationContext(newContext)
-////                delay(1L)
-//               val expectedEvent = if (eventDeferred.isCompleted) eventDeferred.getCompleted() else eventDeferred.await()
-//                Assert.assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
-//                val status = OpenFeatureAPI.getProvider().getProviderStatus()
-//                Assert.assertTrue(status is OpenFeatureEvents.ProviderError)
-//            } catch (e: Exception) {
-//                Assert.assertTrue(e is IllegalStateException)
-//            }
-//        }
-//    }
+    @Test
+    fun shouldNotUpdateTheUserAttributeWhenContextChangeWithNewTargetingKey() {
+        requireInitProviderSuccess()
+        // Note: This test will fail if we directly get the provider status from the provider
+        // because the event is broadcast on a different dispatcher.
+        // Therefore, the correct approach is to use async to get the event from the flow.
+        runBlocking {
+            try {
+                val eventDeferred =
+                    async {
+                        val event = provider!!.observe().take(1).first()
+                        return@async event
+                    }
+                val newContext =
+                    ImmutableContext(
+                        targetingKey = "user2",
+                        attributes = mapOf("attr2" to Value.String("value2")),
+                    )
+                OpenFeatureAPI.setEvaluationContext(newContext)
+
+                val expectedEvent = eventDeferred.await()
+                Assert.assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
+                Assert.assertEquals(
+                    "Changing the targeting_id after initialization is not supported, please reinitialize the provider",
+                    (expectedEvent as OpenFeatureEvents.ProviderError).error.message,
+                )
+            } catch (e: Exception) {
+                Assert.assertTrue(e is IllegalStateException)
+            }
+        }
+    }
 }
