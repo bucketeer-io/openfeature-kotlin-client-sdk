@@ -85,20 +85,18 @@ internal class ProviderValidateContextTests {
                     attributes = mapOf("attr1" to Value.String("value1")),
                 )
             val eventDeferred =
-                async {
+                testScope.async {
                     provider.observe().take(1).first()
                 }
 
             provider.onContextSet(initContext, evaluationContext)
             val expectedEvent = eventDeferred.await()
-
+            advanceUntilIdle()
             assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
             assertEquals(
                 "missing targeting key",
                 (expectedEvent as OpenFeatureEvents.ProviderError).error.message,
             )
-
-            advanceUntilIdle()
         }
 
     @Test
@@ -111,20 +109,18 @@ internal class ProviderValidateContextTests {
                     attributes = mapOf("attr1" to Value.String("value1")),
                 )
             val eventDeferred =
-                async {
+                testScope.async {
                     provider.observe().take(1).first()
                 }
 
             provider.onContextSet(initContext, evaluationContext)
             val expectedEvent = eventDeferred.await()
-
+            advanceUntilIdle()
             assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
             assertEquals(
                 "Changing the targeting_id after initialization is not supported, please reinitialize the provider",
                 (expectedEvent as OpenFeatureEvents.ProviderError).error.message,
             )
-
-            advanceUntilIdle()
         }
 
     @Test
@@ -142,14 +138,12 @@ internal class ProviderValidateContextTests {
                 )
 
             provider.onContextSet(initContext, evaluationContext)
-
+            advanceUntilIdle()
             val userAttributes = mockBKTClientResolver.userAttributes
             val expectedUserAttributes = evaluationContext.toBKTUser().attributes
             assertEquals(userAttributes, expectedUserAttributes)
 
             val status = provider.getProviderStatus()
             assertTrue(status is OpenFeatureEvents.ProviderReady)
-
-            advanceUntilIdle()
         }
 }
