@@ -24,7 +24,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
-import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -35,7 +35,9 @@ internal class ProviderValidateContextTests {
     private val mockBKTClientResolverFactory: MockBKTClientResolverFactory =
         MockBKTClientResolverFactory(mockBKTClientResolver)
     private lateinit var config: BKTConfig
+    private lateinit var provider: BucketeerProvider
     private lateinit var initContext: EvaluationContext
+    private val testScope = TestScope()
 
     @Before
     fun setUp() {
@@ -49,6 +51,7 @@ internal class ProviderValidateContextTests {
                 .featureTag("feature_tag_value")
                 .appVersion("1.2.3")
                 .build()
+        provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, testScope)
         initContext =
             ImmutableContext(
                 targetingKey = "user1",
@@ -60,38 +63,36 @@ internal class ProviderValidateContextTests {
     fun tearDown() {
     }
 
-    private suspend fun requiredInitSuccess(testScope: TestScope): BucketeerProvider {
-        val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, testScope)
+    private suspend fun requiredInitSuccess() {
         val evaluationContext = initContext
         val eventDeferred =
             testScope.async {
                 provider.observe().take(1).first()
             }
+
         provider.initialize(evaluationContext)
         val expectedEvent = eventDeferred.await()
         assertTrue(expectedEvent is OpenFeatureEvents.ProviderReady)
-
-        return provider
     }
 
     @Test
     fun onNewContextIsInvalidMissingTargetingKey() =
-        runTest(timeout = 1.minutes) {
-            val provider = requiredInitSuccess(this)
-            advanceUntilIdle()
+        testScope.runTest(timeout = 500.milliseconds) {
+            requiredInitSuccess()
             val evaluationContext =
                 ImmutableContext(
                     targetingKey = "",
                     attributes = mapOf("attr1" to Value.String("value1")),
                 )
             val eventDeferred =
-                async {
+                testScope.async {
                     provider.observe().take(1).first()
                 }
 
             provider.onContextSet(initContext, evaluationContext)
             val expectedEvent = eventDeferred.await()
             advanceUntilIdle()
+
             assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
             assertEquals(
                 "missing targeting key",
@@ -101,22 +102,22 @@ internal class ProviderValidateContextTests {
 
     @Test
     fun onNewContextIsChangeUserIdShouldFail() =
-        runTest(timeout = 1.minutes) {
-            val provider = requiredInitSuccess(this)
-            advanceUntilIdle()
+        testScope.runTest(timeout = 500.milliseconds) {
+            requiredInitSuccess()
             val evaluationContext =
                 ImmutableContext(
                     targetingKey = "1",
                     attributes = mapOf("attr1" to Value.String("value1")),
                 )
             val eventDeferred =
-                async {
+                testScope.async {
                     provider.observe().take(1).first()
                 }
 
             provider.onContextSet(initContext, evaluationContext)
             val expectedEvent = eventDeferred.await()
             advanceUntilIdle()
+
             assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
             assertEquals(
                 "Changing the targeting_id after initialization is not supported, please reinitialize the provider",
@@ -126,9 +127,8 @@ internal class ProviderValidateContextTests {
 
     @Test
     fun onNewContextChangeAttributesShouldSuccess() =
-        runTest {
-            val provider = requiredInitSuccess(this)
-            advanceUntilIdle()
+        testScope.runTest {
+            requiredInitSuccess()
             val evaluationContext =
                 ImmutableContext(
                     targetingKey = "user1",
