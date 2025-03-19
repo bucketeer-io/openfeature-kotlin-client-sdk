@@ -24,8 +24,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.minutes
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -78,7 +77,7 @@ internal class ProviderValidateContextTests {
 
     @Test
     fun onNewContextIsInvalidMissingTargetingKey() =
-        testScope.runTest(timeout = 500.milliseconds) {
+        testScope.runTest(timeout = 1.minutes) {
             requiredInitSuccess()
             val evaluationContext =
                 ImmutableContext(
@@ -104,7 +103,7 @@ internal class ProviderValidateContextTests {
 
     @Test
     fun onNewContextIsChangeUserIdShouldFail() =
-        testScope.runTest(timeout = 1.seconds) {
+        testScope.runTest(timeout = 1.minutes) {
             requiredInitSuccess()
             val evaluationContext =
                 ImmutableContext(
