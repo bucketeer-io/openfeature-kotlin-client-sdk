@@ -35,7 +35,6 @@ internal class ProviderValidateContextTests {
     private val mockBKTClientResolverFactory: MockBKTClientResolverFactory =
         MockBKTClientResolverFactory(mockBKTClientResolver)
     private lateinit var config: BKTConfig
-    private lateinit var provider: BucketeerProvider
     private lateinit var initContext: EvaluationContext
     private val testScope = TestScope()
 
@@ -51,7 +50,6 @@ internal class ProviderValidateContextTests {
                 .featureTag("feature_tag_value")
                 .appVersion("1.2.3")
                 .build()
-        provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, testScope)
         initContext =
             ImmutableContext(
                 targetingKey = "user1",
@@ -63,29 +61,30 @@ internal class ProviderValidateContextTests {
     fun tearDown() {
     }
 
-    private suspend fun requiredInitSuccess() {
+    private suspend fun requiredInitSuccess(): BucketeerProvider {
+        val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, testScope)
         val evaluationContext = initContext
-        val eventDeferred =
-            testScope.async {
-                provider.observe().take(1).first()
-            }
-
+        val eventDeferred =  testScope.async {
+            provider.observe().take(1).first()
+        }
         provider.initialize(evaluationContext)
         val expectedEvent = eventDeferred.await()
         assertTrue(expectedEvent is OpenFeatureEvents.ProviderReady)
+
+        return provider
     }
 
     @Test
     fun onNewContextIsInvalidMissingTargetingKey() =
         testScope.runTest(timeout = 1.minutes) {
-            requiredInitSuccess()
+            val provider = requiredInitSuccess()
             val evaluationContext =
                 ImmutableContext(
                     targetingKey = "",
                     attributes = mapOf("attr1" to Value.String("value1")),
                 )
             val eventDeferred =
-                testScope.async {
+                async {
                     provider.observe().take(1).first()
                 }
 
@@ -102,14 +101,14 @@ internal class ProviderValidateContextTests {
     @Test
     fun onNewContextIsChangeUserIdShouldFail() =
         testScope.runTest(timeout = 1.minutes) {
-            requiredInitSuccess()
+            val provider = requiredInitSuccess()
             val evaluationContext =
                 ImmutableContext(
                     targetingKey = "1",
                     attributes = mapOf("attr1" to Value.String("value1")),
                 )
             val eventDeferred =
-                testScope.async {
+                async {
                     provider.observe().take(1).first()
                 }
 
@@ -126,15 +125,15 @@ internal class ProviderValidateContextTests {
     @Test
     fun onNewContextChangeAttributesShouldSuccess() =
         testScope.runTest {
-            requiredInitSuccess()
+            val provider = requiredInitSuccess()
             val evaluationContext =
                 ImmutableContext(
                     targetingKey = "user1",
                     attributes =
-                        mapOf(
-                            "attr1" to Value.String("value_test"),
-                            "attr12" to Value.Double(3.2),
-                        ),
+                    mapOf(
+                        "attr1" to Value.String("value_test"),
+                        "attr12" to Value.Double(3.2),
+                    ),
                 )
 
             provider.onContextSet(initContext, evaluationContext)

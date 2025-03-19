@@ -85,10 +85,6 @@ internal class ProviderInitTests {
     fun initializeFailMissingTargetingKey() =
         runTest(timeout = 500.milliseconds) {
             val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
-            val evaluationContext =
-                ImmutableContext(
-                    attributes = mapOf("attr1" to Value.String("value1")),
-                )
             val eventDeferred =
                 async {
                     provider.observe().take(1).first()
