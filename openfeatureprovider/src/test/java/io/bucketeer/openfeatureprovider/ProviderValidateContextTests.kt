@@ -86,7 +86,7 @@ internal class ProviderValidateContextTests {
                     attributes = mapOf("attr1" to Value.String("value1")),
                 )
             val eventDeferred =
-                testScope.async {
+                async {
                     provider.observe().take(1).first()
                 }
 
@@ -111,7 +111,7 @@ internal class ProviderValidateContextTests {
                     attributes = mapOf("attr1" to Value.String("value1")),
                 )
             val eventDeferred =
-                testScope.async {
+                async {
                     provider.observe().take(1).first()
                 }
 
