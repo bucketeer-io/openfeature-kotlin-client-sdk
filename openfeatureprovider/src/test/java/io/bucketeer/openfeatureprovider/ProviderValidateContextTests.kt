@@ -64,9 +64,10 @@ internal class ProviderValidateContextTests {
     private suspend fun requiredInitSuccess(): BucketeerProvider {
         val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, testScope)
         val evaluationContext = initContext
-        val eventDeferred =  testScope.async {
-            provider.observe().take(1).first()
-        }
+        val eventDeferred =
+            testScope.async {
+                provider.observe().take(1).first()
+            }
         provider.initialize(evaluationContext)
         val expectedEvent = eventDeferred.await()
         assertTrue(expectedEvent is OpenFeatureEvents.ProviderReady)
@@ -130,10 +131,10 @@ internal class ProviderValidateContextTests {
                 ImmutableContext(
                     targetingKey = "user1",
                     attributes =
-                    mapOf(
-                        "attr1" to Value.String("value_test"),
-                        "attr12" to Value.Double(3.2),
-                    ),
+                        mapOf(
+                            "attr1" to Value.String("value_test"),
+                            "attr12" to Value.Double(3.2),
+                        ),
                 )
 
             provider.onContextSet(initContext, evaluationContext)
