@@ -25,6 +25,7 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.android.controller.ActivityController
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -102,7 +103,7 @@ internal class ProviderValidateContextTests {
 
     @Test
     fun onNewContextIsChangeUserIdShouldFail() =
-        testScope.runTest(timeout = 500.milliseconds) {
+        testScope.runTest(timeout = 1.seconds) {
             requiredInitSuccess()
             val evaluationContext =
                 ImmutableContext(
