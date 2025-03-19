@@ -92,7 +92,7 @@ internal class ProviderValidateContextTests {
 
             provider.onContextSet(initContext, evaluationContext)
             val expectedEvent = eventDeferred.await()
-            
+
             assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
             assertEquals(
                 "missing targeting key",
