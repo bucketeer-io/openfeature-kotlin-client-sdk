@@ -53,4 +53,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.kotlin.coroutines.android)
+
+    implementation(project(":openfeatureprovider"))
 }
