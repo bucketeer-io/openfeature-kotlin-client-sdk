@@ -24,9 +24,8 @@ class BucketeerProvider(
     private val context: Context,
     private val config: BKTConfig,
     private val coroutineScope: CoroutineScope,
-    dispatcher: CoroutineDispatcher,
 ) : FeatureProvider {
-    private val eventHandler = EventHandler(dispatcher)
+    private lateinit var eventHandler: EventHandler
     internal var clientResolver: BKTClientResolver? = null
     private lateinit var clientResolverFactory: BKTClientResolverFactory
 
@@ -37,11 +36,17 @@ class BucketeerProvider(
         config: BKTConfig,
         coroutineScope: CoroutineScope,
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
-    ) : this(context, config, coroutineScope, dispatcher) {
+    ) : this(context, config, coroutineScope) {
+        eventHandler = EventHandler(dispatcher)
         this.clientResolverFactory = clientResolverFactory
     }
 
     init {
+        // Initialize the event handler and client resolver factory
+        // The normal use case should use this constructor
+        if (::eventHandler.isInitialized.not()) {
+            eventHandler = EventHandler(Dispatchers.IO)
+        }
         if (::clientResolverFactory.isInitialized.not()) {
             clientResolverFactory = DefaultBKTClientResolverFactory()
         }

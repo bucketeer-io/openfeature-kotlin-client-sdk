@@ -71,29 +71,22 @@ internal class ProviderValidateContextTests {
     fun tearDown() {
     }
 
-//    private suspend fun requiredInitSuccess() {
-//        val evaluationContext = initContext
-//        val eventDeferred =
-//            testScope.async {
-//                provider.observe().take(1).first()
-//            }
-//
-//        provider.initialize(evaluationContext)
-//        val expectedEvent = eventDeferred.await()
-//        assertTrue(expectedEvent is OpenFeatureEvents.ProviderReady)
-//    }
+    private suspend fun requiredInitSuccess() {
+        val evaluationContext = initContext
+        val eventDeferred =
+            testScope.async {
+                provider.observe().take(1).first()
+            }
+
+        provider.initialize(evaluationContext)
+        val expectedEvent = eventDeferred.await()
+        assertTrue(expectedEvent is OpenFeatureEvents.ProviderReady)
+    }
 
     @Test
     fun onNewContextIsInvalidMissingTargetingKey() =
         testScope.runTest(timeout = 500.milliseconds) {
-            val initEventDeferred =
-                testScope.async {
-                    provider.observe().take(1).first()
-                }
-
-            provider.initialize(initContext)
-            val initEvent = initEventDeferred.await()
-            assertTrue(initEvent is OpenFeatureEvents.ProviderReady)
+            requiredInitSuccess()
 
             val evaluationContext =
                 ImmutableContext(
@@ -119,14 +112,7 @@ internal class ProviderValidateContextTests {
     @Test
     fun onNewContextIsChangeUserIdShouldFail() =
         testScope.runTest(timeout = 500.milliseconds) {
-            val initEventDeferred =
-                testScope.async {
-                    provider.observe().take(1).first()
-                }
-
-            provider.initialize(initContext)
-            val initEvent = initEventDeferred.await()
-            assertTrue(initEvent is OpenFeatureEvents.ProviderReady)
+            requiredInitSuccess()
 
             val evaluationContext =
                 ImmutableContext(
@@ -152,14 +138,7 @@ internal class ProviderValidateContextTests {
     @Test
     fun onNewContextChangeAttributesShouldSuccess() =
         testScope.runTest {
-            val initEventDeferred =
-                testScope.async {
-                    provider.observe().take(1).first()
-                }
-
-            provider.initialize(initContext)
-            val initEvent = initEventDeferred.await()
-            assertTrue(initEvent is OpenFeatureEvents.ProviderReady)
+            requiredInitSuccess()
 
             val evaluationContext =
                 ImmutableContext(
