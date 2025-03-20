@@ -11,7 +11,7 @@ In conjunction with the [OpenFeature SDK](https://openfeature.dev/docs/reference
 
 For documentation related to flags management in Bucketeer, refer to the [Bucketeer documentation website](https://docs.bucketeer.io/sdk/client-side/android).
 
-## Supported Android sdk versions
+## Supported Android SDK versions
 
 This version of the SDK is built for the following targets:
 
@@ -21,9 +21,11 @@ This version of the SDK is built for the following targets:
 
 ### Gradle
 
+```groovy
 dependencies {
     implementation 'io.bucketeer:openfeature-kotlin-client-sdk:LATEST_VERSION'
 }
+```
 
 ## Usage
 
@@ -35,8 +37,7 @@ Bucketeer provider needs to be created and then set in the global OpenFeatureAPI
 import dev.openfeature.sdk.*
 import io.bucketeer.openfeatureprovider.BucketeerProvider
 import io.bucketeer.sdk.android.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 
 try {
@@ -56,6 +57,7 @@ try {
         .eventsFlushInterval(TimeUnit.SECONDS.toMillis(20))
         .build()
 
+    // Evaluation context
     val initContext = ImmutableContext(
         targetingKey = "USER_ID",
         attributes = mapOf("attr1" to Value.String("value1"))
@@ -64,17 +66,30 @@ try {
     val provider = BucketeerProvider(this, config, lifecycleScope)
 
     lifecycleScope.launch {
-        OpenFeatureAPI.setProviderAndWait(provider, Dispatchers.IO, initContext)
-        val flag = OpenFeatureAPI.getClient().getBooleanValue(featureId, defaultValue = false)
+        val eventDeferred = async(Dispatchers.IO) {
+            provider.observe().take(1).first()
+        }
 
-        if (flag) {
-            // show new feature
-        } else {
-            // show old feature
+        OpenFeatureAPI.setProviderAndWait(provider, Dispatchers.IO, initContext)
+        val event = eventDeferred.await()
+
+        when (event) {
+            is OpenFeatureEvents.ProviderReady -> {
+                // Provider is ready
+                val flag = OpenFeatureAPI.getClient().getBooleanValue(featureId, defaultValue = false)
+                if (flag) {
+                    // Show new feature
+                } else {
+                    // Show old feature
+                }
+            }
+            is OpenFeatureEvents.ProviderError -> {
+                // Handle provider error
+            }
         }
     }
 } catch (e: Exception) {
-    // handle error
+    // Handle error
 }
 ```
 
@@ -113,7 +128,7 @@ OpenFeatureAPI.clearProvider()
 
 ### Evaluate a feature flag
 
-After the provider is set and no error is thrown, you can evaluate a feature flag using OpenFeatureAPI.
+After the provider is set and the provider's status is `OpenFeatureEvents.ProviderReady`, you can evaluate a feature flag using OpenFeatureAPI.
 
 ```kotlin
 val client = OpenFeatureAPI.getClient()
