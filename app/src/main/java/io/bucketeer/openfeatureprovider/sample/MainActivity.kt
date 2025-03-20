@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
-
     lateinit var textView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,10 +54,11 @@ class MainActivity : AppCompatActivity() {
                     .backgroundPollingInterval(TimeUnit.SECONDS.toMillis(60))
                     .eventsFlushInterval(TimeUnit.SECONDS.toMillis(20))
                     .build()
-            val initContext = ImmutableContext(
-                targetingKey = "USER_ID",
-                attributes = mapOf("attr1" to Value.String("value1")),
-            )
+            val initContext =
+                ImmutableContext(
+                    targetingKey = "USER_ID",
+                    attributes = mapOf("attr1" to Value.String("value1")),
+                )
             val provider = BucketeerProvider(this, config, lifecycleScope)
             lifecycleScope.launch {
                 OpenFeatureAPI.setProviderAndWait(provider, Dispatchers.IO, initContext)
