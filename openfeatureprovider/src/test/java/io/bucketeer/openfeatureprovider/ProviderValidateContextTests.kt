@@ -12,6 +12,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -51,7 +52,14 @@ internal class ProviderValidateContextTests {
                 .featureTag("feature_tag_value")
                 .appVersion("1.2.3")
                 .build()
-        provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, testScope)
+        provider =
+            BucketeerProvider(
+                mockBKTClientResolverFactory,
+                activity,
+                config,
+                testScope,
+                StandardTestDispatcher(testScope.testScheduler),
+            )
         initContext =
             ImmutableContext(
                 targetingKey = "user1",

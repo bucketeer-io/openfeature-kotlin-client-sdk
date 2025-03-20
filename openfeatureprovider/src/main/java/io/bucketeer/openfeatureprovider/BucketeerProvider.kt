@@ -14,6 +14,7 @@ import dev.openfeature.sdk.events.OpenFeatureEvents
 import dev.openfeature.sdk.exceptions.OpenFeatureError
 import io.bucketeer.sdk.android.BKTConfig
 import io.bucketeer.sdk.android.BKTException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -23,8 +24,9 @@ class BucketeerProvider(
     private val context: Context,
     private val config: BKTConfig,
     private val coroutineScope: CoroutineScope,
+    dispatcher: CoroutineDispatcher,
 ) : FeatureProvider {
-    private val eventHandler = EventHandler(Dispatchers.IO)
+    private val eventHandler = EventHandler(dispatcher)
     internal var clientResolver: BKTClientResolver? = null
     private lateinit var clientResolverFactory: BKTClientResolverFactory
 
@@ -34,7 +36,8 @@ class BucketeerProvider(
         context: Context,
         config: BKTConfig,
         coroutineScope: CoroutineScope,
-    ) : this(context, config, coroutineScope) {
+        dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    ) : this(context, config, coroutineScope, dispatcher) {
         this.clientResolverFactory = clientResolverFactory
     }
 
