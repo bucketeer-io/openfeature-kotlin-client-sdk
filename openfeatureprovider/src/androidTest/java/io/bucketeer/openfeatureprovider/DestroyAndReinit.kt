@@ -38,6 +38,7 @@ class DestroyAndReinit {
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
+        context.cleanDatabase()
         config =
             BKTConfig
                 .builder()
@@ -59,7 +60,6 @@ class DestroyAndReinit {
             provider = null
             OpenFeatureAPI.shutdown()
             OpenFeatureAPI.clearProvider()
-            context.cleanDatabase()
         } catch (e: Exception) {
             Assert.fail(e.message)
         }

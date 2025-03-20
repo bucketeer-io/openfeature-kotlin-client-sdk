@@ -14,6 +14,7 @@ import io.bucketeer.sdk.android.BKTValue
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -51,7 +52,14 @@ internal class ProviderGetEvaluationTests {
                 .featureTag("feature_tag_value")
                 .appVersion("1.2.3")
                 .build()
-        provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, testScope)
+        provider =
+            BucketeerProvider(
+                mockBKTClientResolverFactory,
+                activity,
+                config,
+                testScope,
+                StandardTestDispatcher(testScope.testScheduler),
+            )
         initContext =
             ImmutableContext(
                 targetingKey = "user1",

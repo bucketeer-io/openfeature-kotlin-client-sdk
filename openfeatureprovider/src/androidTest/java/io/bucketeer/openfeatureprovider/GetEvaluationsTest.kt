@@ -37,6 +37,7 @@ class GetEvaluationsTest {
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
+        context.cleanDatabase()
         config =
             BKTConfig
                 .builder()
@@ -53,12 +54,13 @@ class GetEvaluationsTest {
 
         runBlocking {
             val provider = BucketeerProvider(context, config, CoroutineScope(Dispatchers.Main))
+            // Listen async event in the same queue that we are going to use to set the provider
             val eventDeferred =
-                async {
+                async(Dispatchers.IO) {
                     val event = provider.observe().take(1).first()
                     return@async event
                 }
-            OpenFeatureAPI.setProviderAndWait(provider, Dispatchers.Main, initContext)
+            OpenFeatureAPI.setProviderAndWait(provider, Dispatchers.IO, initContext)
             val expectedEvent = eventDeferred.await()
             Assert.assertEquals(expectedEvent, OpenFeatureEvents.ProviderReady)
             Assert.assertEquals("BucketeerProvider", OpenFeatureAPI.getProvider().metadata.name)
@@ -72,7 +74,6 @@ class GetEvaluationsTest {
             provider = null
             OpenFeatureAPI.shutdown()
             OpenFeatureAPI.clearProvider()
-            context.cleanDatabase()
         } catch (e: Exception) {
             Assert.fail(e.message)
         }
@@ -106,7 +107,7 @@ class GetEvaluationsTest {
         runBlocking {
             try {
                 val eventDeferred =
-                    async {
+                    async(Dispatchers.IO) {
                         val event = provider!!.observe().take(1).first()
                         return@async event
                     }

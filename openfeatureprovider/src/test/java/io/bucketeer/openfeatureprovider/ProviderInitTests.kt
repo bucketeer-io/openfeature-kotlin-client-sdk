@@ -13,6 +13,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -58,14 +59,28 @@ internal class ProviderInitTests {
     @Test
     fun getMetadataReturnsCorrectMetadata() =
         runTest {
-            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            val provider =
+                BucketeerProvider(
+                    mockBKTClientResolverFactory,
+                    activity,
+                    config,
+                    this,
+                    StandardTestDispatcher(testScheduler),
+                )
             assertEquals("BucketeerProvider", provider.metadata.name)
         }
 
     @Test
     fun initializeFailWithNilContext() =
         runTest(timeout = 500.milliseconds) {
-            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            val provider =
+                BucketeerProvider(
+                    mockBKTClientResolverFactory,
+                    activity,
+                    config,
+                    this,
+                    StandardTestDispatcher(testScheduler),
+                )
 
             val eventDeferred =
                 async {
@@ -78,13 +93,23 @@ internal class ProviderInitTests {
             advanceUntilIdle()
 
             assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
-            assertEquals("missing targeting key", (expectedEvent as OpenFeatureEvents.ProviderError).error.message)
+            assertEquals(
+                "missing targeting key",
+                (expectedEvent as OpenFeatureEvents.ProviderError).error.message,
+            )
         }
 
     @Test
     fun initializeFailMissingTargetingKey() =
         runTest(timeout = 500.milliseconds) {
-            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            val provider =
+                BucketeerProvider(
+                    mockBKTClientResolverFactory,
+                    activity,
+                    config,
+                    this,
+                    StandardTestDispatcher(testScheduler),
+                )
             val eventDeferred =
                 async {
                     provider.observe().take(1).first()
@@ -96,14 +121,25 @@ internal class ProviderInitTests {
             advanceUntilIdle()
 
             assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
-            assertEquals("missing targeting key", (expectedEvent as OpenFeatureEvents.ProviderError).error.message)
+            assertEquals(
+                "missing targeting key",
+                (expectedEvent as OpenFeatureEvents.ProviderError).error.message,
+            )
         }
 
     @Test
     fun initializeFailWithError() =
         runTest(timeout = 500.milliseconds) {
-            mockBKTClientResolverFactory.onInitializeError = BKTException.ForbiddenException("ForbiddenException")
-            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            mockBKTClientResolverFactory.onInitializeError =
+                BKTException.ForbiddenException("ForbiddenException")
+            val provider =
+                BucketeerProvider(
+                    mockBKTClientResolverFactory,
+                    activity,
+                    config,
+                    this,
+                    StandardTestDispatcher(testScheduler),
+                )
             val evaluationContext =
                 ImmutableContext(
                     targetingKey = "user1",
@@ -120,13 +156,23 @@ internal class ProviderInitTests {
             advanceUntilIdle()
 
             assertTrue(expectedEvent is OpenFeatureEvents.ProviderError)
-            assertEquals("ForbiddenException", (expectedEvent as OpenFeatureEvents.ProviderError).error.message)
+            assertEquals(
+                "ForbiddenException",
+                (expectedEvent as OpenFeatureEvents.ProviderError).error.message,
+            )
         }
 
     @Test
     fun notReadyProviderStatus() =
         runTest(timeout = 500.milliseconds) {
-            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            val provider =
+                BucketeerProvider(
+                    mockBKTClientResolverFactory,
+                    activity,
+                    config,
+                    this,
+                    StandardTestDispatcher(testScheduler),
+                )
             try {
                 provider.getDoubleEvaluation("feature_id", 0.0, null)
                 fail("Provider should throw an exception")
@@ -139,7 +185,14 @@ internal class ProviderInitTests {
     @Test
     fun initializeSuccess() =
         runTest(timeout = 500.milliseconds) {
-            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            val provider =
+                BucketeerProvider(
+                    mockBKTClientResolverFactory,
+                    activity,
+                    config,
+                    this,
+                    StandardTestDispatcher(testScheduler),
+                )
             val evaluationContext =
                 ImmutableContext(
                     targetingKey = "user1",
@@ -173,8 +226,16 @@ internal class ProviderInitTests {
     @Test
     fun initializeSuccessButReceivedTimeoutError() =
         runTest(timeout = 500.milliseconds) {
-            mockBKTClientResolverFactory.onInitializeError = BKTException.TimeoutException("TimeoutException", null, 1000L)
-            val provider = BucketeerProvider(mockBKTClientResolverFactory, activity, config, this)
+            mockBKTClientResolverFactory.onInitializeError =
+                BKTException.TimeoutException("TimeoutException", null, 1000L)
+            val provider =
+                BucketeerProvider(
+                    mockBKTClientResolverFactory,
+                    activity,
+                    config,
+                    this,
+                    StandardTestDispatcher(testScheduler),
+                )
             val evaluationContext =
                 ImmutableContext(
                     targetingKey = "user1",

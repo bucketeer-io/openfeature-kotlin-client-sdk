@@ -3,6 +3,9 @@ name: e2e
 on:
   workflow_dispatch:
   workflow_call:
+  push:
+    branches:
+      - feat/init-provider
 
 jobs:
   e2e:
