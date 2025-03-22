@@ -1,9 +1,15 @@
-
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlinter)
+}
+
+val properties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    properties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -18,6 +24,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val apiKey = properties.getProperty("api_key") ?: System.getenv("API_KEY")
+        val apiEndpoint = properties.getProperty("api_endpoint") ?: System.getenv("API_ENDPOINT")
+        buildConfigField("String", "API_KEY", "\"${apiKey}\"")
+        buildConfigField("String", "API_ENDPOINT", "\"${apiEndpoint}\"")
     }
 
     buildTypes {
@@ -55,4 +66,5 @@ dependencies {
     implementation(libs.kotlin.coroutines.android)
 
     implementation(project(":openfeatureprovider"))
+    //implementation("com.github.bucketeer-io:openfeature-kotlin-client-sdk:feat~init-provider-SNAPSHOT")
 }

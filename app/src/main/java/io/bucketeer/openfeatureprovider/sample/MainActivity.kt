@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
-    lateinit var textView: TextView
+    private lateinit var textView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,13 +40,11 @@ class MainActivity : AppCompatActivity() {
         try {
             val featureId = "feature-android-e2e-boolean"
             val featureTag = "android"
-            val apiKey = "API_KEY"
-            val apiEndpoint = "API_ENDPOINT"
             val config =
                 BKTConfig
                     .builder()
-                    .apiKey(apiKey)
-                    .apiEndpoint(apiEndpoint)
+                    .apiKey(BuildConfig.API_KEY)
+                    .apiEndpoint(BuildConfig.API_ENDPOINT)
                     .featureTag(featureTag)
                     .appVersion(BuildConfig.VERSION_NAME)
                     .eventsMaxQueueSize(10)
