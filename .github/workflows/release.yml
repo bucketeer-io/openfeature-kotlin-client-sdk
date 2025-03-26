@@ -1,0 +1,15 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@fb7f385da2046f35c544011bc27c9f809122ad2c # v4.2.0
+        with:
+          token: ${{ secrets.WORKFLOW_TOKEN }} # We need to set the PAT so the publish workflow can be triggered
