@@ -1,11 +1,12 @@
 [versions]
 agp = "8.8.2"
-bucketeerAndroidClientSdk = "2.2.1"
+bucketeerAndroidClientSdk = "2.2.3"
 coreKtxVersion = "1.6.1"
 androidxLifecycle = "2.8.7"
 kotlinxCoroutinesTest = "1.8.1"
 openfeatureAndroidSdk = "0.3.3"
-kotlin = "2.1.10"
+kotlin = "2.0.21"
+ksp = "2.0.21-1.0.27"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -34,7 +35,7 @@ kotlin-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-publish = { id = "com.vanniktech.maven.publish", version = "0.30.0" }
-ksp = { id = "com.google.devtools.ksp", version = "2.1.10-1.0.29" }
+publish = { id = "com.vanniktech.maven.publish", version = "0.31.0" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlinter = { id = "org.jmailen.kotlinter", version = "5.0.1" }
 
