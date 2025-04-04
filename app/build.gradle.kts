@@ -66,5 +66,5 @@ dependencies {
     implementation(libs.kotlin.coroutines.android)
 
     implementation(project(":openfeatureprovider"))
-    //implementation("com.github.bucketeer-io:openfeature-kotlin-client-sdk:feat~init-provider-SNAPSHOT")
+    // implementation("com.github.bucketeer-io:openfeature-kotlin-client-sdk:feat~init-provider-SNAPSHOT")
 }
