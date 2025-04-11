@@ -134,19 +134,19 @@ After the provider is set and the provider's status is `OpenFeatureEvents.Provid
 val client = OpenFeatureAPI.getClient()
 
 // Bool
-client.getBooleanValue("my-flag", defaultValue: false)
+client.getBooleanValue("my-flag", defaultValue = false)
 
 // String
-client.getStringValue("my-flag", defaultValue: "default")
+client.getStringValue("my-flag", defaultValue = "default")
 
 // Integer
-client.getIntegerValue("my-flag", defaultValue: 1)
+client.getIntegerValue("my-flag", defaultValue = 1)
 
 // Double
-client.getDoubleValue("my-flag", defaultValue: 1.1)
+client.getDoubleValue("my-flag", defaultValue = 1.1)
 
 // Object
-client.getObjectValue("my-flag", defaultValue: Value.Structure(mapOf("key" to Value.String("value-1"))))
+client.getObjectValue("my-flag", defaultValue = Value.Structure(mapOf("key" to Value.String("value-1"))))
 ```
 
 > [!WARNING]
