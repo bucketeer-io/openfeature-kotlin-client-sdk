@@ -28,8 +28,8 @@ jobs:
         # remove 'v' prefix from tag or workflow input
       - name: Determine version
         run: |
-          if [ ! -z ${{ github.event.inputs.bucketeer_version }} ]; then
-            temp_version="${{ github.event.inputs.bucketeer_version }}"
+          if [ ! -z ${{ github.event.inputs.provider_version }} ]; then
+            temp_version="${{ github.event.inputs.provider_version }}"
             result=${temp_version#"v"}
             echo "ORG_GRADLE_PROJECT_VERSION_NAME=${result}" >> $GITHUB_ENV
           else
