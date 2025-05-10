@@ -26,8 +26,10 @@ android {
 
         val apiKey = properties.getProperty("api_key") ?: System.getenv("API_KEY")
         val apiEndpoint = properties.getProperty("api_endpoint") ?: System.getenv("API_ENDPOINT")
+        val versionName = project.properties["VERSION_NAME"].toString()
         buildConfigField("String", "API_KEY", "\"${apiKey}\"")
         buildConfigField("String", "API_ENDPOINT", "\"${apiEndpoint}\"")
+        buildConfigField("String", "SDK_VERSION", "\"${versionName}\"")
     }
 
     buildTypes {
@@ -69,5 +71,6 @@ dependencies {
 
     // Available to this module and any module that depends on it
     api(libs.openfeature.android.sdk)
-    api(libs.bucketeer.android.sdk)
+//    api(libs.bucketeer.android.sdk)
+    api("com.github.bucketeer-io:android-client-sdk:feat~proxy-source-id-SNAPSHOT")
 }

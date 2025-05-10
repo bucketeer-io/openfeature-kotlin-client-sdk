@@ -8,6 +8,7 @@ import io.bucketeer.sdk.android.BKTEvaluationDetails
 import io.bucketeer.sdk.android.BKTException
 import io.bucketeer.sdk.android.BKTUser
 import io.bucketeer.sdk.android.BKTValue
+import io.bucketeer.sdk.android.internal.model.SourceID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -72,7 +73,9 @@ internal class DefaultBKTClientResolverFactory : BKTClientResolverFactory {
         user: BKTUser,
         timeoutMillis: Long,
     ): BKTException? {
-        val future = BKTClient.initialize(context, config, user)
+        val configWithSourceId =
+            config.copyToSetSourceIdAndVersion()
+        val future = BKTClient.initialize(context, configWithSourceId, user)
         val result =
             withContext(Dispatchers.IO) {
                 future.get()
@@ -123,3 +126,19 @@ internal value class DefaultBKTClientResolver(
 
     override fun updateUserAttributes(attributes: Map<String, String>) = client.updateUserAttributes(attributes)
 }
+
+fun BKTConfig.copyToSetSourceIdAndVersion(): BKTConfig =
+    BKTConfig
+        .builder()
+        .apiKey(this.apiKey)
+        .apiEndpoint(this.apiEndpoint)
+        .featureTag(this.featureTag)
+        .eventsFlushInterval(this.eventsFlushInterval)
+        .eventsMaxQueueSize(this.eventsMaxBatchQueueCount)
+        .pollingInterval(this.pollingInterval)
+        .backgroundPollingInterval(this.backgroundPollingInterval)
+        .appVersion(this.appVersion)
+        .logger(this.logger)
+        .wrapperSdkVersion(BuildConfig.SDK_VERSION)
+        .wrapperSdkSourceId(SourceID.OPEN_FEATURE_KOTLIN.value)
+        .build()
