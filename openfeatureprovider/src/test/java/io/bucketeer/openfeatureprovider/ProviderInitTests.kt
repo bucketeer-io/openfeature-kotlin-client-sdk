@@ -211,6 +211,16 @@ internal class ProviderInitTests {
             assertTrue(expectedEvent is OpenFeatureEvents.ProviderReady)
             assertEquals(mockBKTClientResolver.currentUser(), evaluationContext.toBKTUser())
 
+            // Verify we set correct sourceId and SDK version
+            assertEquals(
+                mockBKTClientResolverFactory.config?.sourceIdValue,
+                OPEN_FEATURE_KOTLIN_SOURCE_ID,
+            )
+            assertEquals(
+                mockBKTClientResolverFactory.config?.sdkVersion,
+                BuildConfig.SDK_VERSION,
+            )
+
             var didCallShutdown = false
             mockBKTClientResolverFactory.onDestroy = {
                 didCallShutdown = true
