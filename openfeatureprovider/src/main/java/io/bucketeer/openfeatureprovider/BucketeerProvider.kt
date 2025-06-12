@@ -124,7 +124,9 @@ class BucketeerProvider(
         coroutineScope.launch {
             try {
                 val bktUser = (initialContext ?: ImmutableContext()).toBKTUser()
-                val result = clientResolverFactory.initialize(context, config, user = bktUser)
+                val overriddenConfig =
+                    config.overrideWithProviderData()
+                val result = clientResolverFactory.initialize(context, overriddenConfig, user = bktUser)
                 if (result == null || result is BKTException.TimeoutException) {
                     // The BKTClient SDK has been initialized
                     clientResolver = clientResolverFactory.getClientResolver()

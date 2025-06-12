@@ -1,7 +1,6 @@
 package io.bucketeer.openfeatureprovider
 
 import io.bucketeer.sdk.android.BKTConfig
-import io.bucketeer.sdk.android.internal.model.SourceID
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -24,19 +23,19 @@ class BKTConfigTest {
                 .build()
 
         // Act
-        val copiedConfig = originalConfig.copyToSetSourceIdAndVersion()
+        val overriddenConfig = originalConfig.overrideWithProviderData()
 
         // Assert
-        assertEquals(originalConfig.apiKey, copiedConfig.apiKey)
-        assertEquals(originalConfig.apiEndpoint, copiedConfig.apiEndpoint)
-        assertEquals(originalConfig.featureTag, copiedConfig.featureTag)
-        assertEquals(originalConfig.eventsFlushInterval, copiedConfig.eventsFlushInterval)
-        assertEquals(originalConfig.eventsMaxBatchQueueCount, copiedConfig.eventsMaxBatchQueueCount)
-        assertEquals(originalConfig.pollingInterval, copiedConfig.pollingInterval)
-        assertEquals(originalConfig.backgroundPollingInterval, copiedConfig.backgroundPollingInterval)
-        assertEquals(originalConfig.appVersion, copiedConfig.appVersion)
-        assertEquals(originalConfig.logger, copiedConfig.logger)
-        assertEquals(BuildConfig.SDK_VERSION, copiedConfig.sdkVersion)
-        assertEquals(SourceID.OPEN_FEATURE_KOTLIN, copiedConfig.sourceId)
+        assertEquals(originalConfig.apiKey, overriddenConfig.apiKey)
+        assertEquals(originalConfig.apiEndpoint, overriddenConfig.apiEndpoint)
+        assertEquals(originalConfig.featureTag, overriddenConfig.featureTag)
+        assertEquals(originalConfig.eventsFlushInterval, overriddenConfig.eventsFlushInterval)
+        assertEquals(originalConfig.eventsMaxBatchQueueCount, overriddenConfig.eventsMaxBatchQueueCount)
+        assertEquals(originalConfig.pollingInterval, overriddenConfig.pollingInterval)
+        assertEquals(originalConfig.backgroundPollingInterval, overriddenConfig.backgroundPollingInterval)
+        assertEquals(originalConfig.appVersion, overriddenConfig.appVersion)
+        assertEquals(originalConfig.logger, overriddenConfig.logger)
+        assertEquals(BuildConfig.SDK_VERSION, overriddenConfig.sdkVersion)
+        assertEquals(OPEN_FEATURE_KOTLIN_SOURCE_ID, overriddenConfig.sourceIdValue)
     }
 }
