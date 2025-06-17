@@ -1,6 +1,6 @@
 [versions]
 agp = "8.8.2"
-bucketeerAndroidClientSdk = "2.2.4"
+bucketeerAndroidClientSdk = "2.2.5"
 coreKtxVersion = "1.6.1"
 androidxLifecycle = "2.8.7"
 kotlinxCoroutinesTest = "1.8.1"
