@@ -66,5 +66,4 @@ dependencies {
     implementation(libs.kotlin.coroutines.android)
 
     implementation(project(":openfeatureprovider"))
-    implementation(libs.bucketeer.android.sdk)
 }

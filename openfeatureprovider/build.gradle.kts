@@ -71,6 +71,5 @@ dependencies {
 
     // Available to this module and any module that depends on it
     api(libs.openfeature.android.sdk)
-//    api(libs.bucketeer.android.sdk)
-    api("com.github.bucketeer-io:android-client-sdk:3109600f9e")
+    api(libs.bucketeer.android.sdk)
 }
