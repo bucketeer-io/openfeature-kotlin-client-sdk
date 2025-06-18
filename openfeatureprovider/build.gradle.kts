@@ -8,10 +8,10 @@ plugins {
     alias(libs.plugins.kotlinter)
 }
 
-val properties = Properties()
+val customProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
-    properties.load(localPropertiesFile.inputStream())
+    customProperties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -24,8 +24,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
 
-        val apiKey = properties.getProperty("api_key") ?: System.getenv("API_KEY")
-        val apiEndpoint = properties.getProperty("api_endpoint") ?: System.getenv("API_ENDPOINT")
+        val apiKey = customProperties.getProperty("api_key") ?: System.getenv("API_KEY")
+        val apiEndpoint = customProperties.getProperty("api_endpoint") ?: System.getenv("API_ENDPOINT")
         val versionName = project.properties["VERSION_NAME"].toString()
         buildConfigField("String", "API_KEY", "\"${apiKey}\"")
         buildConfigField("String", "API_ENDPOINT", "\"${apiEndpoint}\"")
