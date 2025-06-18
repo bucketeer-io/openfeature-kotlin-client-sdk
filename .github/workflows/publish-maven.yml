@@ -38,7 +38,7 @@ jobs:
             echo "ORG_GRADLE_PROJECT_VERSION_NAME=${result}" >> $GITHUB_ENV
           fi
 
-      - name: Publish android-client-sdk
+      - name: Publish openfeature-kotlin-client-sdk
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_ACCESS_TOKEN_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_ACCESS_TOKEN_PASSWORD }}
