@@ -3,9 +3,6 @@ name: e2e
 on:
   workflow_dispatch:
   workflow_call:
-  push:
-    branches:
-      - main
 jobs:
   e2e:
     # macos-13-xlarge is an M1 mac (which has no Android SDK)
