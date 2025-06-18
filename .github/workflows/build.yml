@@ -34,7 +34,7 @@ jobs:
         run: ./gradlew assemble --stacktrace
 
       - name: Run Bucketeer unit tests
-        run: ./gradlew :bucketeer:testDebugUnitTest --stacktrace
+        run: ./gradlew :openfeatureprovider:testDebugUnitTest --stacktrace
 
       - name: upload bucketeer build reports
         if: always()
