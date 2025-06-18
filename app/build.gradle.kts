@@ -6,10 +6,10 @@ plugins {
     alias(libs.plugins.kotlinter)
 }
 
-val properties = Properties()
+val customProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
-    properties.load(localPropertiesFile.inputStream())
+    customProperties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -25,8 +25,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val apiKey = properties.getProperty("api_key") ?: System.getenv("API_KEY")
-        val apiEndpoint = properties.getProperty("api_endpoint") ?: System.getenv("API_ENDPOINT")
+        val apiKey = customProperties.getProperty("api_key") ?: System.getenv("API_KEY")
+        val apiEndpoint = customProperties.getProperty("api_endpoint") ?: System.getenv("API_ENDPOINT")
         buildConfigField("String", "API_KEY", "\"${apiKey}\"")
         buildConfigField("String", "API_ENDPOINT", "\"${apiEndpoint}\"")
     }
@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.kotlin.coroutines.android)
-
-    implementation(project(":openfeatureprovider"))
+    // Uncomment the following line if you want to use the local OpenFeature provider module
+    //implementation(project(":openfeatureprovider"))
+    implementation(libs.bucketeer.openfeature.kotlin)
 }
