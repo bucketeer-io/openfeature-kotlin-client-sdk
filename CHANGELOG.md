@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.1](https://github.com/bucketeer-io/openfeature-kotlin-client-sdk/compare/v0.0.1...v0.0.1) (2025-08-19)
+
+
+### Miscellaneous
+
+* **example:** use bucketeer provider from maven central ([#6](https://github.com/bucketeer-io/openfeature-kotlin-client-sdk/issues/6)) ([e84418e](https://github.com/bucketeer-io/openfeature-kotlin-client-sdk/commit/e84418e058d29343d21147350b35c4fd8e698262))
+
 ## [0.0.1](https://github.com/bucketeer-io/openfeature-kotlin-client-sdk/compare/v0.0.1...v0.0.1) (2025-06-18)
 
 
